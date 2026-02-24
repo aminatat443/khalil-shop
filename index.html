@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+<!-- <!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="UTF-8">
@@ -35,7 +35,7 @@
                     <path fill="#f9cb38" d="M18 10h28v44H18z"/><path fill="#137a08" d="M10 10C3.373 10 0 14.925 0 21v22c0 6.075 3.373 11 10 11h10V10z"/><path fill="#ec1c24" d="M54 10H44v44h10c6.627 0 10-4.925 10-11V21c0-6.075-3.373-11-10-11"/><path fill="#137a08" d="m41.11 28.22l-6.679.01l-2.074-6.471L30.3 28.23l-6.695-.01l5.425 3.95l-2.098 6.433l5.442-4l5.437 4l-2.101-6.433z"/>
                 </svg> FR
             </span> 
-                    <!-- Compte et Panier -->
+                   
                     <div class="user-cart">
                         <div class="user-menu">
                             <button class="user-btn">Bonjour, Aminata
@@ -70,5 +70,310 @@
     </header> 
 </div>
     
+</body>
+</html> -->
+
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Modern E-commerce Topbar</title>
+
+<!-- Google Font -->
+<link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&display=swap" rel="stylesheet">
+
+<!-- Font Awesome -->
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+
+<style>
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+  font-family: 'Poppins', sans-serif;
+}
+
+body {
+  background: #FBF2EF;
+}
+
+/* ===== NAVBAR ===== */
+.navbar {
+  position: sticky;
+  top: 0;
+  width: 100%;
+  padding: 15px 5%;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  backdrop-filter: blur(12px);
+  background: rgba(255, 255, 255, 0.7);
+  box-shadow: 0 8px 20px rgba(0,0,0,0.05);
+  z-index: 99
+}
+
+/* LOGO */
+#logo {
+  width: 90px;
+  height: auto;
+  cursor: pointer;
+}
+
+.search-box {
+  flex: 1;
+  margin: 0 40px;
+  position: relative;
+  display: flex;
+  align-items: center;
+  background: #FBF2EF;
+  border-radius: 50px;
+  overflow: hidden;
+  transition: all 0.4s ease;
+}
+
+.search-box input::placeholder {
+  transition: all 0.3s ease;
+}
+
+.search-box:focus-within input::placeholder {
+  opacity: 0.6;
+  transform: translateX(5px);
+}
+
+.search-box input {
+  flex: 1;
+  border: none;
+  outline: none;
+  background: transparent;
+  padding: 14px 20px;
+  font-size: 14px;
+  transition: all 0.4s ease;
+}
+
+/* Button */
+.search-box button {
+  width: 45px;
+  height: 45px;
+  border: none;
+  background: transparent;
+  border-radius: 50%;
+  margin-right: 6px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.4s ease;
+}
+
+.search-box button i {
+  color: #888;
+  font-size: 15px;
+  transition: all 0.4s ease;
+}
+
+.search-box:focus-within {
+  background: #fff;
+  box-shadow: 0 0 0 4px rgba(215, 122, 97, 0.15);
+}
+
+.search-box:focus-within button {
+  background: #d77a61;
+  transform: translateX(-4px);
+}
+
+.search-box:focus-within button:hover {
+  background: #c26e57;
+  transform: scale(1.05);
+}
+
+.search-box:focus-within button i {
+  color: white;
+  transform: scale(1.1);
+}
+
+/* ===== CATEGORY SELECT ===== */
+.category-select {
+  position: relative;
+  border-right: 1px solid rgba(0,0,0,0.08);
+}
+
+.category-select select {
+  appearance: none;
+  border: none;
+  outline: none;
+  background: transparent;
+  padding: 14px 30px 14px 18px;
+  font-size: 14px;
+  cursor: pointer;
+  border-radius: 50px 0 0 50px;
+}
+
+/* Custom arrow */
+.category-select::after {
+  content: "\f078";
+  font-family: "Font Awesome 6 Free";
+  font-weight: 900;
+  position: absolute;
+  right: 12px;
+  top: 50%;
+  transform: translateY(-50%);
+  font-size: 10px;
+  color: #888;
+  pointer-events: none;
+  transition: 0.3s;
+}
+
+/* Focus effect */
+.search-box:focus-within .category-select::after {
+  color: #d77a61;
+}
+
+/* NAV ICONS */
+.nav-icons {
+  display: flex;
+  align-items: center;
+  gap: 25px;
+}
+
+.nav-icons i {
+  font-size: 18px;
+  cursor: pointer;
+  position: relative;
+  color: #333;
+  transition: 0.3s;
+}
+
+.nav-icons i:hover {
+  color: #d77a61;
+}
+
+.profile-menu {
+  position: relative;
+}
+
+/* Dropdown premium */
+.dropdown {
+  position: absolute;
+  top: 45px;
+  right: 0;
+  background: white;
+  width: 190px;
+  border-radius: 12px;
+  box-shadow: 0 15px 35px rgba(0,0,0,0.08);
+  padding: 10px 0;
+  opacity: 0;
+  visibility: hidden;
+  transform: translateY(10px);
+  transition: all 0.25s ease;
+}
+
+/* Active state */
+.profile-menu:hover .dropdown {
+  opacity: 1;
+  visibility: visible;
+  transform: translateY(0);
+}
+
+.dropdown a {
+  padding: 10px 15px;
+  text-decoration: none;
+  color: #333;
+  font-size: 14px;
+  transition: 0.3s;
+}
+
+.dropdown a:hover {
+  background-color: #FBF2EF;
+  border-radius: 5px;
+}
+
+.dropdown hr {
+  border: none;
+  height: 1px;
+  background: #eee;
+  margin: 5px 0;
+}
+
+.dropdown {
+  display: flex;
+  flex-direction: column;
+}
+
+.dropdown .logout {
+  color: #d77a61;
+  font-weight: 500;
+}
+
+.dropdown .logout:hover {
+  color: #333;
+}
+
+
+
+/* CART BADGE */
+.cart-count {
+  position: absolute;
+  top: -6px;
+  right: -8px;
+  background: #d77a61;
+  color: white;
+  font-size: 11px;
+  padding: 2px 6px;
+  border-radius: 50%;
+}
+
+/* RESPONSIVE */
+@media (max-width: 768px) {
+  /* .search-box {
+    display: none;
+  } */
+}
+</style>
+</head>
+
+<body>
+
+<nav class="navbar">
+  
+  <div>
+    <a href="index.html"><img id="logo" src="images/Khalil_shop-cropped.svg" alt="Khalil shop logo featuring stylized storefront with brown awning, display window, entrance door, and Khalil Shop text in gray"> </a>
+  </div>
+
+  <form class="search-box">
+      <!-- Catégories -->
+  <div class="category-select">
+    <select>
+      <option value="">Toutes nos categories</option>
+      <option value="homme">Homme</option>
+      <option value="femme">Femme</option>
+      <option value="deco-maison">Déco maison</option>
+    </select>
+  </div>
+    <input type="search" placeholder="Rechercher sur Khalil Shop...">
+     <button class="btn btn-primary" type="submit">
+       <i class="fa-solid fa-magnifying-glass"></i>
+    </button>
+  </form>
+
+  <div class="nav-icons">
+    <i class="fa-regular fa-heart"></i>
+    <div class="profile-menu">
+    <i class="fa-regular fa-user"></i>
+      <div class="dropdown">
+        <a href="#">Mon profil</a>
+        <a href="#">Mes commandes</a>
+        <a href="#">Retours</a>
+        <hr>
+        <a href="#" class="logout">Déconnexion</a>
+      </div>
+    </div>
+    <i class="fa-solid fa-shopping-cart">
+      <span class="cart-count">3</span>
+    </i>
+  </div>
+
+</nav>
+
 </body>
 </html>
