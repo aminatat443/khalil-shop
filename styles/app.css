@@ -1,0 +1,345 @@
+/* 
+---------------------- Couleurs -------------------------
+
+PRIMARY
+Base: #d77a61 (Coral)
+Tint: FBF2EF (Light Coral)
+Shade: #c26e57 (Dark Coral)
+
+SECONDARY
+Base: #2F4F4F (Dark Slate Gray)
+Tint: #AFB7A9 (Sage Green)
+Shade: #213737 (Charcoal)
+
+TERTIARY
+Base: #D7B661 (Sand)
+Tint: #E7D3A0 (Light Sand)
+Shade: #C2A457 (Dark Sand)
+
+GREY
+Base: #495057 (State)
+Tint: #C8C8C8 (Light Grey)
+Shade: #212529 (Graphite)
+White: #ffffff (White)
+Black:#000000 (Black)
+
+------------------- Typographie ------------------
+FONT SIZES
+12px / 20px / 24px / 32px / 40px / 48px / 62px
+
+FONT WEIGHT
+400 /700
+
+LINE HEIGHT
+1.2 / 1.5 
+
+LETTER SPACING
+0 / -2PX
+
+FONT FAMILY
+Poppins
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+*/
+
+:root {
+    /* couleurs */
+    --primary-base: #d77a61;
+    --primary-tint: #FBF2EF;
+    --primary-shade: #c26e57;
+    --secondary-base: #2F4F4F;
+    --secondary-tint: #AFB7A9; 
+    --secondary-shade: #213737;
+    --tertiary-base: #D7B661;
+    --tertiary-tint: #E7D3A0;           
+    --tertiary-shade: #C2A457;
+    --grey-base: #495057;
+    --grey-tint: #C8C8C8;
+    --grey-shade: #212529;      
+    --white: #ffffff;
+    --black: #000000;
+
+    /* FONT SIZE */
+    --text-small: 12px;
+    --text-base: 16px;
+    --text-paragraph: 20px;
+    --text-h5: 24px;
+    --text-h4: 32px;
+    --text-h3: 40px;
+    --text-h2: 48px;
+    --text-h1: 62px;
+
+
+    /* FONT FAMILY */
+    --font-family: "Montserrat", sans-serif;
+
+    /* FONT WEIGHT */
+    --font-weight-normal: 400;
+    --font-weight-light: 200;
+    --font-weight-medium: 500;
+    --font-weight-bold: 700;
+
+    /* LINE HEIGHT */
+    --line-height-tight : 1.2;
+    --line-height-normal: 1.5;
+
+    
+
+}
+
+
+/* ------------------------- Styles globaux ------------------------- */
+
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+html {
+    font-size: 62.5%; /* 10px/16px = 62.5%*/
+}
+
+body {
+    font-family: var(--font-family);
+    font-weight: var(--font-weiht-normal);
+    line-height: var(--line-height-normal);
+    color: var(--grey-base);
+
+}
+ .container {
+    max-width: 1300px;
+    width: 100%;
+    margin: 0 auto;
+ }
+
+h1 {
+    font-size: var(--text-h1);
+}
+
+h2 {
+    font-size: var(--text-h2);
+}
+
+h3 {
+    font-size: var(--text-h3);
+}
+
+h4 {
+    font-size: var(--text-h4);
+}
+
+h5 {
+    font-size: var(--text-h5);
+}
+
+p {
+    font-size: var(--text-base);
+}
+
+a {
+    font-size: var(--text-base);
+    text-decoration: none;
+    display: inline-block;
+    color: var(--grey-base);
+}
+
+a:link, a:visited, a:hover, a:active {
+    color: var(--grey-base);
+}
+
+ul {
+    list-style: none;
+}
+
+
+/* ------------------------- Composant ------------------------- */
+
+
+
+
+
+/* ------------------------- Header ------------------------- */
+
+#logo {
+   width: 90px;
+   height: auto;
+}
+
+.topbar {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin: 0 auto;
+    padding: 12px 30px;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.08);
+    position: relative;
+}
+
+.nav-actions {
+    display: flex;
+    gap: 20px;
+    align-items: center;
+}
+
+.search-box {
+    flex: 1;
+    max-width: 700px;
+    width: 500px;
+    display: flex;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+    border-radius: 50px;
+    overflow: hidden;
+    margin: 0 30px;
+}
+
+.search-box input {
+    flex: 1;
+    padding: 12px 20px;
+    border: none;
+    outline: none;
+    background-color: var(--primary-tint);
+}
+
+.search-box input::placeholder {
+    color: var(--grey-base);
+    font-weight: var(--font-weight-light);
+
+}
+
+.search-box button {
+    padding: 0 20px;
+    border: none;
+    background: var(--primary-base);
+    color: var(--white);
+    cursor: pointer;
+    transition: 0.2s;
+}
+
+.search-box button:hover {
+  background-color: var(--primary-shade);
+}
+
+.lang {
+    display: flex;
+    font-size: var(--text-small);
+    gap: 5px;
+    align-items: center;
+    color: var(--grey-base);
+    font-weight: var(--font-weight-medium);
+}
+
+.user-cart {
+    display: flex;
+    gap: 20px;
+    align-items: center;
+}
+
+.user-menu {
+    position: relative;
+}
+
+.user-btn {
+    background: var(--secondary-base); 
+    color: var(--primary-tint);
+    border: none;
+    padding: 5px 10px;
+    border-radius: 25px;
+    cursor: pointer;
+    font-weight: var(--font-weight-medium);
+    display: flex;
+    align-items: center;
+    transition: 0.2s;
+    gap: 8px;
+}
+
+.user-btn:hover {
+  background: var(--secondary-shade); 
+}
+
+.dropdown {
+  position: absolute;
+  top: 120%;
+  right: 0;
+  background: white;
+  padding: 10px 0;
+  margin: 0;
+  border-radius: 10px;
+  box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+  display: none;
+  min-width: 200px;
+  z-index: 10;
+}
+
+.dropdown li a {
+  display: block;
+  padding: 5px 10px;
+  font-weight: var(--font-weight-medium);
+  transition: 0.2s;
+}
+
+.dropdown li a:hover {
+  color: var(--primary-base);
+}
+
+/* Affichage dropdown au hover */
+.user-menu:hover .dropdown {
+  display: block;
+}
+
+/* Panier */
+.cart a {
+  position: relative;
+  color: var(--secondary-base);
+  transition: color 0.2s;
+}
+
+.cart a:hover {
+  color: var(--primary-base);
+}
+
+.cart-count {
+  position: absolute;
+  top: -8px;
+  right: -10px;
+  background: var(--primary-base);
+  color: white;
+  font-size: var(--text-small);
+  width: 20px;
+  height: 20px;
+  border-radius: 50%;
+  text-align: center;
+  line-height: 20px;
+  font-weight: var(--font-weight-bold);
+}
+
+/* Responsive */
+@media screen and (max-width: 900px) {
+  /* .search-box {
+    display: none; 
+  } */
+}
