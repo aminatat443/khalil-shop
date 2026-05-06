@@ -1,379 +1,213 @@
-<!-- <!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Montserrat:ital,wght@0,100..900;1,100..900&display=swap" rel="stylesheet">
-    <link rel="stylesheet" href="styles/app.css">
-    <title>Document</title>
-</head>
-<body>
-    <div class="container">
-        <header class="header">
-        <nav class="topbar">
-            <a href="index.html"><img id="logo" src="images/Khalil_shop-cropped.svg" alt="logo"> </a>       
-            <div class="nav-actions">
-                <form class="search-box">
-                <input type="search" placeholder="Rechercher sur Khalil Shop">
-                <button class="btn btn-primary" type="submit" >
-                    <svg xmlns="http://www.w3.org/2000/svg" 
-                        width="24" 
-                        height="24" 
-                        viewBox="0 0 24 24">
-                        <path fill="currentColor" d="m19.485 20.154l-6.262-6.262q-.75.639-1.725.989t-1.96.35q-2.398 0-4.064-1.666Q3.808 11.898 3.808 9.5t1.666-4.064t4.064-1.667t4.065 1.667T15.269 9.5q0 1.042-.369 2.017t-.97 1.668l6.262 6.261zM9.539 14.23q1.99 0 3.36-1.37t1.37-3.361t-1.37-3.36t-3.36-1.37t-3.361 1.37t-1.37 3.36t1.37 3.36t3.36 1.37"/>
-                    </svg>
-                    </button>
-                </form>  
-                   
-            <span class="lang">
-                <svg xmlns="http://www.w3.org/2000/svg" 
-                    width="24" 
-                    height="24" 
-                    viewBox="0 0 64 64">
-                    <path fill="#f9cb38" d="M18 10h28v44H18z"/><path fill="#137a08" d="M10 10C3.373 10 0 14.925 0 21v22c0 6.075 3.373 11 10 11h10V10z"/><path fill="#ec1c24" d="M54 10H44v44h10c6.627 0 10-4.925 10-11V21c0-6.075-3.373-11-10-11"/><path fill="#137a08" d="m41.11 28.22l-6.679.01l-2.074-6.471L30.3 28.23l-6.695-.01l5.425 3.95l-2.098 6.433l5.442-4l5.437 4l-2.101-6.433z"/>
-                </svg> FR
-            </span> 
-                   
-                    <div class="user-cart">
-                        <div class="user-menu">
-                            <button class="user-btn">Bonjour, Aminata
-                                <svg xmlns="http://www.w3.org/2000/svg" 
-                                width="10" 
-                                height="10" 
-                                viewBox="0 0 15 15">
-                                <path fill="currentColor" d="M7.5 12L0 4h15z"/></svg>
-                            </button>
-                            <ul class="dropdown">
-                                <li><a href="#">Mon compte</a></li>
-                                <li><a href="#">Mes commandes</a></li>
-                                <li><a href="#">Retours</a></li>
-                                <li><a href="#">Mes favoris</a></li>
-                                <li><a href="#">Déconnexion</a></li>
-                            </ul>
-                        </div>
-                        <div class="cart">
-                            <a href="#">
-                                <svg xmlns="http://www.w3.org/2000/svg" 
-                                width="24" 
-                                height="24" 
-                                viewBox="0 0 24 24">
-                                <path fill="currentColor" d="M16 18a2 2 0 0 1 2 2a2 2 0 0 1-2 2a2 2 0 0 1-2-2a2 2 0 0 1 2-2m0 1a1 1 0 0 0-1 1a1 1 0 0 0 1 1a1 1 0 0 0 1-1a1 1 0 0 0-1-1m-9-1a2 2 0 0 1 2 2a2 2 0 0 1-2 2a2 2 0 0 1-2-2a2 2 0 0 1 2-2m0 1a1 1 0 0 0-1 1a1 1 0 0 0 1 1a1 1 0 0 0 1-1a1 1 0 0 0-1-1M18 6H4.27l2.55 6H15c.33 0 .62-.16.8-.4l3-4c.13-.17.2-.38.2-.6a1 1 0 0 0-1-1m-3 7H6.87l-.77 1.56L6 15a1 1 0 0 0 1 1h11v1H7a2 2 0 0 1-2-2a2 2 0 0 1 .25-.97l.72-1.47L2.34 4H1V3h2l.85 2H18a2 2 0 0 1 2 2c0 .5-.17.92-.45 1.26l-2.91 3.89c-.36.51-.96.85-1.64.85"/>
-                                </svg> 
-                                <span class="cart-count">3</span></a>
-                        </div>
-                    </div>
-                  
-            </div>
-        </nav>
-    </header> 
-</div>
-    
-</body>
-</html> -->
-
 <!DOCTYPE html>
 <html lang="fr">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Modern E-commerce Topbar</title>
-
-<!-- Google Font -->
-<link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&display=swap" rel="stylesheet">
-
-<!-- Font Awesome -->
-<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
-
-<style>
-* {
-  margin: 0;
-  padding: 0;
-  box-sizing: border-box;
-  font-family: 'Poppins', sans-serif;
-}
-
-body {
-  background: #FBF2EF;
-}
-
-/* ===== NAVBAR ===== */
-.navbar {
-  position: sticky;
-  top: 0;
-  width: 100%;
-  padding: 15px 5%;
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  backdrop-filter: blur(12px);
-  background: rgba(255, 255, 255, 0.7);
-  box-shadow: 0 8px 20px rgba(0,0,0,0.05);
-  z-index: 99
-}
-
-/* LOGO */
-#logo {
-  width: 90px;
-  height: auto;
-  cursor: pointer;
-}
-
-.search-box {
-  flex: 1;
-  margin: 0 40px;
-  position: relative;
-  display: flex;
-  align-items: center;
-  background: #FBF2EF;
-  border-radius: 50px;
-  overflow: hidden;
-  transition: all 0.4s ease;
-}
-
-.search-box input::placeholder {
-  transition: all 0.3s ease;
-}
-
-.search-box:focus-within input::placeholder {
-  opacity: 0.6;
-  transform: translateX(5px);
-}
-
-.search-box input {
-  flex: 1;
-  border: none;
-  outline: none;
-  background: transparent;
-  padding: 14px 20px;
-  font-size: 14px;
-  transition: all 0.4s ease;
-}
-
-/* Button */
-.search-box button {
-  width: 45px;
-  height: 45px;
-  border: none;
-  background: transparent;
-  border-radius: 50%;
-  margin-right: 6px;
-  cursor: pointer;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  transition: all 0.4s ease;
-}
-
-.search-box button i {
-  color: #888;
-  font-size: 15px;
-  transition: all 0.4s ease;
-}
-
-.search-box:focus-within {
-  background: #fff;
-  box-shadow: 0 0 0 4px rgba(215, 122, 97, 0.15);
-}
-
-.search-box:focus-within button {
-  background: #d77a61;
-  transform: translateX(-4px);
-}
-
-.search-box:focus-within button:hover {
-  background: #c26e57;
-  transform: scale(1.05);
-}
-
-.search-box:focus-within button i {
-  color: white;
-  transform: scale(1.1);
-}
-
-/* ===== CATEGORY SELECT ===== */
-.category-select {
-  position: relative;
-  border-right: 1px solid rgba(0,0,0,0.08);
-}
-
-.category-select select {
-  appearance: none;
-  border: none;
-  outline: none;
-  background: transparent;
-  padding: 14px 30px 14px 18px;
-  font-size: 14px;
-  cursor: pointer;
-  border-radius: 50px 0 0 50px;
-}
-
-/* Custom arrow */
-.category-select::after {
-  content: "\f078";
-  font-family: "Font Awesome 6 Free";
-  font-weight: 900;
-  position: absolute;
-  right: 12px;
-  top: 50%;
-  transform: translateY(-50%);
-  font-size: 10px;
-  color: #888;
-  pointer-events: none;
-  transition: 0.3s;
-}
-
-/* Focus effect */
-.search-box:focus-within .category-select::after {
-  color: #d77a61;
-}
-
-/* NAV ICONS */
-.nav-icons {
-  display: flex;
-  align-items: center;
-  gap: 25px;
-}
-
-.nav-icons i {
-  font-size: 18px;
-  cursor: pointer;
-  position: relative;
-  color: #333;
-  transition: 0.3s;
-}
-
-.nav-icons i:hover {
-  color: #d77a61;
-}
-
-.profile-menu {
-  position: relative;
-}
-
-/* Dropdown premium */
-.dropdown {
-  position: absolute;
-  top: 45px;
-  right: 0;
-  background: white;
-  width: 190px;
-  border-radius: 12px;
-  box-shadow: 0 15px 35px rgba(0,0,0,0.08);
-  padding: 10px 0;
-  opacity: 0;
-  visibility: hidden;
-  transform: translateY(10px);
-  transition: all 0.25s ease;
-}
-
-/* Active state */
-.profile-menu:hover .dropdown {
-  opacity: 1;
-  visibility: visible;
-  transform: translateY(0);
-}
-
-.dropdown a {
-  padding: 10px 15px;
-  text-decoration: none;
-  color: #333;
-  font-size: 14px;
-  transition: 0.3s;
-}
-
-.dropdown a:hover {
-  background-color: #FBF2EF;
-  border-radius: 5px;
-}
-
-.dropdown hr {
-  border: none;
-  height: 1px;
-  background: #eee;
-  margin: 5px 0;
-}
-
-.dropdown {
-  display: flex;
-  flex-direction: column;
-}
-
-.dropdown .logout {
-  color: #d77a61;
-  font-weight: 500;
-}
-
-.dropdown .logout:hover {
-  color: #333;
-}
-
-
-
-/* CART BADGE */
-.cart-count {
-  position: absolute;
-  top: -6px;
-  right: -8px;
-  background: #d77a61;
-  color: white;
-  font-size: 11px;
-  padding: 2px 6px;
-  border-radius: 50%;
-}
-
-/* RESPONSIVE */
-@media (max-width: 768px) {
-  /* .search-box {
-    display: none;
-  } */
-}
-</style>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Khalil Shop</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Montserrat:ital,wght@0,100..900;1,100..900&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/7.0.1/css/all.min.css" integrity="sha512-2SwdPD6INVrV/lHTZbO2nodKhrnDdJK9/kg2XD1r9uGqPo1cUbujc+IYdlYdEErWNu69gVcYgdxlmVmzTWnetw==" crossorigin="anonymous" referrerpolicy="no-referrer" />
+  <link rel="stylesheet" href="styles/app.css">
 </head>
 
 <body>
 
-<nav class="navbar">
-  
-  <div>
-    <a href="index.html"><img id="logo" src="images/Khalil_shop-cropped.svg" alt="Khalil shop logo featuring stylized storefront with brown awning, display window, entrance door, and Khalil Shop text in gray"> </a>
+<header class="header">
+
+  <!-- NAVBAR -->
+  <nav class="navbar-modern">
+
+    <!-- LOGO -->
+    <img id="logo" src="images/Khalil_shop-cropped.svg" alt="logo">
+
+    <!-- NAV LINKS -->
+   <div class="nav-links">
+
+  <a href="#" class="active">Nouveautés</a>
+
+  <!-- HOMME -->
+  <div class="nav-item-dropdown">
+
+    <a href="#">Homme</a>
+
+    <div class="mega-menu">
+
+      <div class="mega-column">
+        <h4>Vêtements</h4>
+        <a href="#">T-shirts</a>
+        <a href="#">Chemises</a>
+        <a href="#">Pantalons</a>
+        <a href="#">Vestes</a>
+      </div>
+
+      <div class="mega-column">
+        <h4>Chaussures</h4>
+        <a href="#">Sneakers</a>
+        <a href="#">Mocassins</a>
+        <a href="#">Baskets</a>
+      </div>
+
+      <div class="mega-column">
+        <h4>Accessoires</h4>
+        <a href="#">Montres</a>
+        <a href="#">Casquettes</a>
+        <a href="#">Sacs</a>
+      </div>
+
+    </div>
+
   </div>
 
-  <form class="search-box">
-      <!-- Catégories -->
-  <div class="category-select">
-    <select>
-      <option value="">Toutes nos categories</option>
-      <option value="homme">Homme</option>
-      <option value="femme">Femme</option>
-      <option value="deco-maison">Déco maison</option>
-    </select>
-  </div>
-    <input type="search" placeholder="Rechercher sur Khalil Shop...">
-     <button class="btn btn-primary" type="submit">
-       <i class="fa-solid fa-magnifying-glass"></i>
-    </button>
-  </form>
+  <!-- FEMME -->
+  <div class="nav-item-dropdown">
 
-  <div class="nav-icons">
-    <i class="fa-regular fa-heart"></i>
-    <div class="profile-menu">
-    <i class="fa-regular fa-user"></i>
-      <div class="dropdown">
-        <a href="#">Mon profil</a>
-        <a href="#">Mes commandes</a>
-        <a href="#">Retours</a>
-        <hr>
-        <a href="#" class="logout">Déconnexion</a>
+    <a href="#">Femme</a>
+
+    <div class="mega-menu">
+
+      <div class="mega-column">
+        <h4>Mode</h4>
+        <a href="#">Robes</a>
+        <a href="#">Jupes</a>
+        <a href="#">Pantalons</a>
+      </div>
+
+      <div class="mega-column">
+        <h4>Chaussures</h4>
+        <a href="#">Talons</a>
+        <a href="#">Sneakers</a>
+        <a href="#">Sandales</a>
+      </div>
+
+    <div class="mega-column">
+        <h4>Accessoires</h4>
+        <a href="#">Montres</a>
+        <a href="#">Casquettes</a>
+        <a href="#">Sacs</a>
+      </div>
+
+    </div>
+
+  </div>
+
+  <!-- DECO -->
+  <div class="nav-item-dropdown">
+
+    <a href="#">Déco</a>
+
+    <div class="mega-menu">
+
+      <div class="mega-column">
+        <h4>Salon</h4>
+        <a href="#">Canapés</a>
+        <a href="#">Lampes</a>
+        <a href="#">Tapis</a>
+      </div>
+
+      <div class="mega-column">
+        <h4>Chambre</h4>
+        <a href="#">Lits</a>
+        <a href="#">Rideaux</a>
+      </div>
+
+      <div class="mega-column">
+        <h4>Décoration</h4>
+        <a href="#">Cadres</a>
+        <a href="#">Vases</a>
+        <a href="#">Bougies</a>
+      </div>
+
+    </div>
+
+  </div>
+
+  <a href="#" class="promo">🔥 Promo</a>
+
+</div>
+
+    <!-- RIGHT -->
+    <div class="nav-right">
+
+      <div class="search-box-modern">
+        <i class="fa-solid fa-magnifying-glass"></i>
+        <input type="text" placeholder="Rechercher dans Khalil Shop" />
+      </div>
+
+      <!-- LOGIN -->
+      <button class="btn-login">Se connecter</button>
+
+      <!-- USER MENU -->
+      <div class="nav-icon user-menu hidden">
+        <i class="fa-regular fa-user"></i>
+
+        <div class="dropdown">
+          <a href="#">Mon profil</a>
+          <a href="#">Mes commandes</a>
+          <a href="#">Favoris</a>
+          <a href="#" class="logout">Déconnexion</a>
+        </div>
+      </div>
+
+      <div class="nav-icon">
+        <i class="fa-regular fa-heart"></i>
+      </div>
+
+      <div class="nav-icon cart">
+        <i class="fa-solid fa-cart-shopping"></i>
+        <span class="cart-count">3</span>
+      </div>
+
+    </div>
+
+  </nav>
+
+  <!-- HERO -->
+  <section class="hero-modern">
+
+    <div class="hero-left">
+      <h1 class="hero-left-title">KHALIL SHOP</h1>
+      <h2 class="hero-left-title-2">Votre style, votre identité</h2>
+      <p>
+        Découvrez notre collection de vêtements et objets déco soigneusement sélectionnés
+        pour sublimer votre style et votre intérieur.
+      </p>
+
+      <a href="" class="btn-hero">Découvrir maintenant</a>
+
+      <div class="stats">
+        <div class="stat"><strong>100+ </strong><span>Produits</span></div>
+        <div class="stat"><strong>200+ </strong><span>Clients</span></div>
+        <div class="stat"><strong>50+ </strong><span>Articles déco</span></div>
       </div>
     </div>
-    <i class="fa-solid fa-shopping-cart">
-      <span class="cart-count">3</span>
-    </i>
+
+   <div class="hero-right">
+
+  <div class="slider">
+
+    <div class="slides">
+      <img src="images/fashion.png" class="slide active">
+      <img src="images/deco.png" class="slide">
+      <img src="images/fashion.png" class="slide">
+    </div>
+
+    <!-- boutons -->
+    <button class="slider-btn prev">
+      <i class="fa-solid fa-chevron-left"></i>
+    </button>
+
+    <button class="slider-btn next">
+      <i class="fa-solid fa-chevron-right"></i>
+    </button>
+
   </div>
 
-</nav>
+</div>
+ 
+  </section>
 
+</header>
+  <script src="scripts/scripts.js"></script>
 </body>
 </html>
