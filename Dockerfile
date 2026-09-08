@@ -53,6 +53,6 @@ RUN printf '<Directory /var/www/html/public>\n\
 
 RUN a2enconf laravel
 
-EXPOSE 80
+EXPOSE 443
 
 CMD ["sh", "-c", "php artisan optimize:clear && php artisan migrate --force && apache2-foreground"]
