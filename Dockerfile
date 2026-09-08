@@ -37,7 +37,12 @@ RUN npm run build
 
 RUN chown -R www-data:www-data storage bootstrap/cache
 
-RUN sed -i 's#DocumentRoot /var/www/html#DocumentRoot /var/www/html/public#' /etc/apache2/sites-available/000-default.conf
+RUN printf '<Directory /var/www/html/public>\n\
+    AllowOverride All\n\
+    Require all granted\n\
+</Directory>\n' > /etc/apache2/conf-available/laravel.conf
+
+RUN a2enconf laravel
 
 RUN printf '<Directory /var/www/html/public>\n\
     AllowOverride All\n\
