@@ -1,0 +1,48 @@
+@import 'tailwindcss';
+
+@source '../../vendor/laravel/framework/src/Illuminate/Pagination/resources/views/*.blade.php';
+@source '../../storage/framework/views/*.php';
+@source '../**/*.blade.php';
+@source '../**/*.js';
+
+@theme {
+    --font-sans: 'Montserrat', ui-sans-serif, system-ui, sans-serif, 'Apple Color Emoji', 'Segoe UI Emoji',
+        'Segoe UI Symbol', 'Noto Color Emoji';
+    --font-display: 'Fraunces', ui-serif, Georgia, serif;
+
+    /* Palette KhalilShop — docs/SPEC.md §3 (validée par le client) */
+    --color-primary: #d77a61;
+    --color-primary-tint: #FBF2EF;
+    --color-primary-shade: #c26e57;
+    --color-secondary: #2F4F4F;
+    --color-secondary-tint: #AFB7A9;
+    --color-secondary-shade: #213737;
+    --color-tertiary: #D7B661;
+    --color-tertiary-tint: #E7D3A0;
+    --color-tertiary-shade: #C2A457;
+    --color-grey: #333333;
+    --color-grey-tint: #f5f5f5;
+    --color-grey-shade: #212529;
+}
+
+[x-cloak] {
+    display: none !important;
+}
+
+@layer utilities {
+    .font-display {
+        font-family: var(--font-display);
+        font-optical-sizing: auto;
+    }
+
+    /* Léger grain de texture pour un rendu papier/premium sur les grands aplats */
+    .grain::before {
+        content: '';
+        position: absolute;
+        inset: 0;
+        pointer-events: none;
+        opacity: .04;
+        mix-blend-mode: overlay;
+        background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='120' height='120'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='2' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+    }
+}
