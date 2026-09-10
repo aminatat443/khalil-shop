@@ -53,7 +53,6 @@ RUN printf '<Directory /var/www/html/public>\n\
 
 RUN a2enconf laravel
 
-RUN php artisan migrate --force
 
 EXPOSE 443
 
