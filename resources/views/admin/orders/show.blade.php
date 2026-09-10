@@ -26,7 +26,7 @@
         <a href="{{ route('orders.invoice', $order) }}" target="_blank" class="text-xs font-semibold uppercase tracking-[0.1em] text-secondary-shade hover:text-primary">
             <i class="fa-solid fa-file-invoice mr-1.5"></i>Facture
         </a>
-        <span class="bg-grey-tint px-4 py-2 text-xs font-semibold uppercase tracking-[0.1em] text-secondary-shade">{{ $statusLabels[$order->status] ?? $order->status }}</span>
+        <span class="bg-grey-tint px-4 py-2 text-xs font-semibold uppercase tracking-[0.1em]"><x-order-status-badge :order="$order" /></span>
     </div>
 </div>
 
@@ -112,7 +112,7 @@
             @if(! in_array($order->status, ['annulee', 'livree']))
                 <form action="{{ route('admin.orders.cancel', $order) }}" method="POST" class="mt-4" onsubmit="return confirm('Annuler cette commande ?');">
                     @csrf
-                    <button type="submit" class="w-full border border-primary py-3 text-xs font-semibold uppercase tracking-[0.15em] text-primary transition hover:bg-primary hover:text-white">
+                    <button type="submit" class="w-full border border-red-300 py-3 text-xs font-semibold uppercase tracking-[0.15em] text-red-600 transition hover:bg-red-600 hover:text-white">
                         Annuler la commande
                     </button>
                 </form>

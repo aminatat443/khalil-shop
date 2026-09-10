@@ -53,7 +53,10 @@ class HomeController extends Controller
             ->take(6)
             ->get()
             ->map(fn (Product $product) => [
-                'image' => $product->images->first()->url,
+                // "pad" plutôt que "fill" : les photos produit sont presque toujours en portrait,
+                // un recadrage en paysage 1200x700 coupait le vêtement. On garde l'image entière,
+                // complétée par un fond blanc plutôt qu'un recadrage.
+                'image' => img_url($product->images->first()->url, 1200, 700, 'pad', 'ffffff'),
                 'name' => $product->name,
                 'price' => $product->price,
                 'url' => route('products.show', $product),

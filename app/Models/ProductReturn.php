@@ -11,6 +11,16 @@ class ProductReturn extends Model
     // mais pointe vers la table `returns` (docs/SPEC.md §2.1).
     protected $table = 'returns';
 
+    public const STATUS_LABELS = [
+        'demandee' => 'Demandé', 'acceptee' => 'Accepté', 'refusee' => 'Refusé',
+        'article_recu' => 'Article reçu', 'remboursee' => 'Remboursé',
+    ];
+
+    public const STATUS_TONES = [
+        'demandee' => 'amber', 'acceptee' => 'blue', 'refusee' => 'red',
+        'article_recu' => 'neutral', 'remboursee' => 'green',
+    ];
+
     protected $fillable = [
         'order_item_id',
         'reason',

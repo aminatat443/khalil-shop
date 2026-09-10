@@ -93,6 +93,8 @@
                 </button>
 
                 @auth
+                    <x-notification-bell />
+
                     <div class="relative hidden md:block" x-data="{ accountOpen: false }" @mouseenter="accountOpen = true" @mouseleave="accountOpen = false" @click.outside="accountOpen = false">
                         <button type="button" class="flex items-center gap-1.5 text-secondary-shade transition hover:text-primary" aria-label="Compte">
                             <i class="fa-solid fa-user text-[17px]"></i>
@@ -459,7 +461,7 @@
                         headers: {
                             'Content-Type': 'application/json',
                             Accept: 'application/json',
-                            'X-CSRF-TOKEN': document.querySelector('meta[name=\'csrf-token\']').content,
+                            'X-XSRF-TOKEN': window.csrfToken(),
                         },
                         body: JSON.stringify({ email: this.unverifiedEmail }),
                     })
@@ -508,7 +510,9 @@
                         class="space-y-5"
                         @submit.prevent="
                             loading = true; error = null; success = null; unverifiedEmail = null;
-                            fetch($el.action, { method: 'POST', headers: { Accept: 'application/json' }, body: new FormData($el) })
+                            const body = new FormData($el);
+                            body.delete('_token');
+                            fetch($el.action, { method: 'POST', headers: { Accept: 'application/json', 'X-XSRF-TOKEN': window.csrfToken() }, body })
                                 .then(async (response) => {
                                     if (response.status === 419) {
                                         error = 'Votre session a expiré (page restée ouverte trop longtemps). Rechargement…';
@@ -538,7 +542,7 @@
                         </div>
 
                         <template x-if="success">
-                            <p class="text-sm text-secondary-shade" x-text="success"></p>
+                            <p class="text-sm text-green-600" x-text="success"></p>
                         </template>
 
                         <template x-if="unverifiedEmail">
@@ -549,7 +553,7 @@
                         </template>
 
                         <template x-if="error">
-                            <p class="text-sm text-primary" x-text="error"></p>
+                            <p class="text-sm text-red-600" x-text="error"></p>
                         </template>
 
                         <button type="submit" :disabled="loading" class="w-full bg-secondary-shade px-6 py-4 text-xs font-semibold uppercase tracking-[0.15em] text-white transition hover:bg-primary disabled:opacity-50">
@@ -572,8 +576,8 @@
                     <p class="mt-2 text-sm text-grey">Rejoignez KhalilShop.</p>
 
                     <template x-if="success">
-                        <div class="mt-8 border border-secondary-shade/10 bg-grey-tint px-5 py-4 text-sm text-secondary-shade">
-                            <i class="fa-solid fa-envelope-circle-check mr-2 text-primary"></i><span x-text="success"></span>
+                        <div class="mt-8 border border-green-200 bg-green-50 px-5 py-4 text-sm text-green-700">
+                            <i class="fa-solid fa-envelope-circle-check mr-2"></i><span x-text="success"></span>
                         </div>
                     </template>
 
@@ -605,7 +609,9 @@
                         class="space-y-5"
                         @submit.prevent="
                             loading = true; error = null;
-                            fetch($el.action, { method: 'POST', headers: { Accept: 'application/json' }, body: new FormData($el) })
+                            const body = new FormData($el);
+                            body.delete('_token');
+                            fetch($el.action, { method: 'POST', headers: { Accept: 'application/json', 'X-XSRF-TOKEN': window.csrfToken() }, body })
                                 .then(async (response) => {
                                     if (response.status === 419) {
                                         error = 'Votre session a expiré (page restée ouverte trop longtemps). Rechargement…';
@@ -647,7 +653,7 @@
                         </div>
 
                         <template x-if="error">
-                            <p class="text-sm text-primary" x-text="error"></p>
+                            <p class="text-sm text-red-600" x-text="error"></p>
                         </template>
 
                         <button type="submit" :disabled="loading" class="w-full bg-secondary-shade px-6 py-4 text-xs font-semibold uppercase tracking-[0.15em] text-white transition hover:bg-primary disabled:opacity-50">

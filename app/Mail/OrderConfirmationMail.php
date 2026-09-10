@@ -3,6 +3,7 @@
 namespace App\Mail;
 
 use App\Models\Order;
+use App\Models\Setting;
 use Barryvdh\DomPDF\Facade\Pdf;
 use Illuminate\Bus\Queueable;
 use Illuminate\Mail\Mailable;
@@ -40,7 +41,9 @@ class OrderConfirmationMail extends Mailable
      */
     public function attachments(): array
     {
-        $pdf = Pdf::loadView('pdf.invoice', ['order' => $this->order])->output();
+        $pdf = Pdf::loadView('pdf.invoice', ['order' => $this->order, 'settings' => Setting::current()])
+            ->setPaper('a4')
+            ->output();
 
         return [
             Attachment::fromData(fn () => $pdf, 'facture-'.$this->order->order_number.'.pdf')

@@ -6,11 +6,14 @@ use App\Mail\OrderConfirmationMail;
 use App\Models\Coupon;
 use App\Models\Delivery;
 use App\Models\Order;
+use App\Models\User;
+use App\Notifications\NewOrderNotification;
 use App\Services\CartService;
 use App\Services\OrderService;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Mail;
+use Illuminate\Support\Facades\Notification;
 use Illuminate\View\View;
 use InvalidArgumentException;
 use RuntimeException;
@@ -86,7 +89,7 @@ class CheckoutController extends Controller
             'delivery_region' => ['required', 'string', 'max:255'],
             'delivery_city' => ['required', 'string', 'max:255'],
             'delivery_quartier' => ['nullable', 'string', 'max:255'],
-            'delivery_address' => ['required', 'string', 'max:500'],
+            'delivery_address' => ['nullable', 'string', 'max:500'],
             'delivery_instructions' => ['nullable', 'string', 'max:500'],
             'delivery_id' => ['required', 'integer', 'exists:deliveries,id'],
             'payment_method' => ['required', 'in:cod,wave,orange_money,carte'],
@@ -122,7 +125,7 @@ class CheckoutController extends Controller
                     'region' => $data['delivery_region'],
                     'city' => $data['delivery_city'],
                     'quartier' => $data['delivery_quartier'] ?? null,
-                    'address' => $data['delivery_address'],
+                    'address' => $data['delivery_address'] ?? '',
                     'instructions' => $data['delivery_instructions'] ?? null,
                 ],
                 paymentMethod: $data['payment_method'],
@@ -146,7 +149,7 @@ class CheckoutController extends Controller
                     'region' => $data['delivery_region'],
                     'city' => $data['delivery_city'],
                     'quartier' => $data['delivery_quartier'] ?? null,
-                    'address' => $data['delivery_address'],
+                    'address' => $data['delivery_address'] ?? '',
                     'instructions' => $data['delivery_instructions'] ?? null,
                 ]
             );
@@ -165,6 +168,8 @@ class CheckoutController extends Controller
         } catch (Throwable $e) {
             report($e);
         }
+
+        Notification::send(User::staff()->get(), new NewOrderNotification($order));
 
         return redirect()->route('checkout.confirmation', $order);
     }

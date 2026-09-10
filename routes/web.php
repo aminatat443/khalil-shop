@@ -11,9 +11,12 @@ use App\Http\Controllers\Admin\ProductVariantController as AdminProductVariantCo
 use App\Http\Controllers\Admin\PromotionController as AdminPromotionController;
 use App\Http\Controllers\Admin\ReturnController as AdminReturnController;
 use App\Http\Controllers\Admin\ReviewController as AdminReviewController;
+use App\Http\Controllers\Admin\CampaignController as AdminCampaignController;
+use App\Http\Controllers\Admin\SettingController as AdminSettingController;
 use App\Http\Controllers\Admin\StaffController as AdminStaffController;
 use App\Http\Controllers\AccountController;
 use App\Http\Controllers\AssistantController;
+use App\Http\Controllers\NotificationController;
 use App\Http\Controllers\AuthController;
 use App\Http\Controllers\CartController;
 use App\Http\Controllers\CatalogController;
@@ -46,12 +49,19 @@ Route::middleware('auth')->prefix('mon-compte')->name('account.')->group(functio
     Route::get('/commandes/{order}', [AccountController::class, 'orderShow'])->name('orders.show');
     Route::get('/retours', [ReturnController::class, 'index'])->name('returns');
     Route::post('/retours', [ReturnController::class, 'store'])->name('returns.store');
+    Route::post('/commandes/{order}/retour', [ReturnController::class, 'storeForOrder'])->name('orders.return');
 });
 
 Route::get('/recherche', [SearchController::class, 'index'])->name('search');
 Route::get('/recherche/suggestions', [SearchController::class, 'suggest'])->name('search.suggestions');
 
 Route::post('/assistant/message', [AssistantController::class, 'message'])->middleware('throttle:15,1')->name('assistant.message');
+
+Route::middleware('auth')->prefix('notifications')->name('notifications.')->group(function () {
+    Route::get('/', [NotificationController::class, 'index'])->name('index');
+    Route::post('/{id}/lu', [NotificationController::class, 'markRead'])->name('read');
+    Route::post('/tout-lire', [NotificationController::class, 'markAllRead'])->name('read-all');
+});
 
 Route::get('/panier', [CartController::class, 'index'])->name('cart.index');
 Route::post('/panier/ajouter', [CartController::class, 'store'])->name('cart.add');
@@ -72,7 +82,9 @@ Route::prefix('admin')->name('admin.')->middleware(['auth', 'staff'])->group(fun
     Route::get('/', [AdminDashboardController::class, 'index'])->name('dashboard');
 
     Route::resource('products', AdminProductController::class)->except('show');
+    Route::post('products/{product}/toggle/{flag}', [AdminProductController::class, 'toggleFlag'])->name('products.toggle');
     Route::post('products/{product}/images', [AdminProductImageController::class, 'store'])->name('products.images.store');
+    Route::post('products/{product}/images/{image}/primary', [AdminProductImageController::class, 'primary'])->name('products.images.primary');
     Route::delete('products/{product}/images/{image}', [AdminProductImageController::class, 'destroy'])->name('products.images.destroy');
     Route::post('products/{product}/variants', [AdminProductVariantController::class, 'store'])->name('products.variants.store');
     Route::put('products/{product}/variants/{variant}', [AdminProductVariantController::class, 'update'])->name('products.variants.update');
@@ -101,6 +113,13 @@ Route::prefix('admin')->name('admin.')->middleware(['auth', 'staff'])->group(fun
     Route::get('staff/create', [AdminStaffController::class, 'create'])->name('staff.create');
     Route::post('staff', [AdminStaffController::class, 'store'])->name('staff.store');
     Route::delete('staff/{user}', [AdminStaffController::class, 'destroy'])->name('staff.destroy');
+
+    Route::get('configuration', [AdminSettingController::class, 'edit'])->name('settings.edit');
+    Route::post('configuration', [AdminSettingController::class, 'update'])->name('settings.update');
+
+    Route::get('campagnes', [AdminCampaignController::class, 'index'])->name('campaigns.index');
+    Route::get('campagnes/nouvelle', [AdminCampaignController::class, 'create'])->name('campaigns.create');
+    Route::post('campagnes', [AdminCampaignController::class, 'store'])->name('campaigns.store');
 });
 
 // Route catalogue en dernier : {category:slug} matcherait sinon les segments ci-dessus

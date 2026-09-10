@@ -3,11 +3,15 @@
 namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
+use App\Mail\OrderStatusMail;
 use App\Models\Order;
+use App\Notifications\OrderStatusNotification;
 use App\Services\OrderService;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Mail;
 use Illuminate\View\View;
+use Throwable;
 
 class OrderController extends Controller
 {
@@ -52,6 +56,8 @@ class OrderController extends Controller
 
         $success = $this->orders->confirm($order);
 
+        $this->notifyStatus($order);
+
         return back()->with('status', $success
             ? 'Commande confirmée, stock mis à jour.'
             : 'Rupture de stock détectée — la commande a été annulée automatiquement.');
@@ -62,6 +68,8 @@ class OrderController extends Controller
         $this->authorize('cancel', $order);
 
         $this->orders->cancel($order);
+
+        $this->notifyStatus($order);
 
         return back()->with('status', 'Commande annulée, stock restauré si nécessaire.');
     }
@@ -79,6 +87,27 @@ class OrderController extends Controller
 
         $order->update(['status' => $data['status']]);
 
+        $this->notifyStatus($order);
+
         return back()->with('status', 'Statut mis à jour.');
+    }
+
+    /**
+     * Email de suivi envoyé au client à chaque changement de statut — l'échec d'envoi (Brevo
+     * indisponible, etc.) ne doit jamais faire échouer l'action admin déjà appliquée en base.
+     */
+    private function notifyStatus(Order $order): void
+    {
+        $order = $order->fresh();
+
+        try {
+            Mail::to($order->customer_email)->send(new OrderStatusMail($order));
+        } catch (Throwable $e) {
+            report($e);
+        }
+
+        // Notification en app — seulement si la commande est rattachée à un compte (une
+        // commande invité n'a personne à notifier côté client).
+        $order->user?->notify(new OrderStatusNotification($order));
     }
 }

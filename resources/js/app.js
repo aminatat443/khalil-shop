@@ -2,6 +2,15 @@ import './bootstrap';
 import '@fortawesome/fontawesome-free/css/all.min.css';
 import Alpine from 'alpinejs';
 
+// Le jeton CSRF lu depuis le cookie XSRF-TOKEN (plutôt que la balise <meta>, figée au
+// chargement de la page) est renouvelé par Laravel à chaque réponse — plus robuste pour
+// les pages restées ouvertes longtemps, dont le jeton statique finit par expirer.
+function csrfToken() {
+    const match = document.cookie.match(/(?:^|; )XSRF-TOKEN=([^;]*)/);
+    return match ? decodeURIComponent(match[1]) : '';
+}
+window.csrfToken = csrfToken;
+
 document.addEventListener('alpine:init', () => {
     // Panier — état source de vérité côté serveur, hydraté au chargement puis mis à jour par
     // fetch (pas de rechargement de page à l'ajout, cohérent avec la section 33 du cahier des charges).
@@ -49,7 +58,7 @@ document.addEventListener('alpine:init', () => {
                 headers: {
                     Accept: 'application/json',
                     'Content-Type': 'application/json',
-                    'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content,
+                    'X-XSRF-TOKEN': csrfToken(),
                 },
                 body: JSON.stringify(payload),
             });

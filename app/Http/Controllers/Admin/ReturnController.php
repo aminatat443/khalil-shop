@@ -3,10 +3,14 @@
 namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
+use App\Mail\ReturnStatusMail;
 use App\Models\ProductReturn;
+use App\Notifications\ReturnStatusNotification;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Mail;
 use Illuminate\View\View;
+use Throwable;
 
 class ReturnController extends Controller
 {
@@ -44,6 +48,16 @@ class ReturnController extends Controller
         ]);
 
         $return->update($data);
+
+        $return = $return->fresh(['orderItem.order']);
+
+        try {
+            Mail::to($return->orderItem->order->customer_email)->send(new ReturnStatusMail($return));
+        } catch (Throwable $e) {
+            report($e);
+        }
+
+        $return->orderItem->order->user?->notify(new ReturnStatusNotification($return));
 
         return back()->with('status', 'Retour mis à jour.');
     }

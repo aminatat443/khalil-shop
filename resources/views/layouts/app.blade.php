@@ -22,8 +22,11 @@
     {{-- Header --}}
     @include('components.header')
 
-    {{-- Message de confirmation (ex : compte supprimé, email vérifié...) --}}
+    {{-- Message de confirmation (ex : compte supprimé...) --}}
     @include('components.flash-status')
+
+    {{-- Modale centrée pour la confirmation de vérification d'email --}}
+    @include('components.email-verified-modal')
 
     {{-- Rappel adresse de livraison --}}
     @include('components.address-reminder')

@@ -31,7 +31,7 @@
         </thead>
         <tbody class="divide-y divide-secondary-shade/10">
             @forelse($promotions as $promotion)
-                <tr>
+                <tr onclick="window.location='{{ route('admin.promotions.edit', $promotion) }}'" class="cursor-pointer transition hover:bg-grey-tint/40">
                     <td class="px-6 py-4 text-secondary-shade">{{ $promotion->product?->name ?? $promotion->category?->name ?? 'Toutes catégories' }}</td>
                     <td class="px-6 py-4 text-secondary-shade">{{ $promotion->type === 'percentage' ? $promotion->value.'%' : number_format($promotion->value, 0, ',', ' ').' FCFA' }}</td>
                     <td class="px-6 py-4 text-xs text-grey">

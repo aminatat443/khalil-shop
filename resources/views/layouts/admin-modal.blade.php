@@ -15,6 +15,18 @@
             </a>
 
             <div class="max-h-[85vh] overflow-y-auto p-8 sm:p-10">
+
+                {{-- La bannière de confirmation du layout admin est masquée derrière cette modale
+                     (position fixed plein écran) : on la réaffiche ici pour qu'elle reste visible. --}}
+                @if(session('status'))
+                    <div x-data="{ show: true }" x-show="show" class="mb-6 flex items-start justify-between gap-4 border border-green-200 bg-green-50 px-5 py-4 text-sm text-green-700 dark:border-green-500/20 dark:bg-green-500/10 dark:text-green-400">
+                        <span>{{ session('status') }}</span>
+                        <button type="button" @click="show = false" aria-label="Fermer" class="shrink-0 text-green-700/60 transition hover:text-green-700 dark:text-green-400/60 dark:hover:text-green-400">
+                            <i class="fa-solid fa-xmark"></i>
+                        </button>
+                    </div>
+                @endif
+
                 @yield('modal')
             </div>
 

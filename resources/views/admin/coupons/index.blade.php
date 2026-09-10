@@ -33,7 +33,7 @@
         </thead>
         <tbody class="divide-y divide-secondary-shade/10">
             @forelse($coupons as $coupon)
-                <tr>
+                <tr onclick="window.location='{{ route('admin.coupons.edit', $coupon) }}'" class="cursor-pointer transition hover:bg-grey-tint/40">
                     <td class="px-6 py-4 font-medium text-secondary-shade">{{ $coupon->code }}</td>
                     <td class="px-6 py-4 text-secondary-shade">{{ $coupon->type === 'percentage' ? $coupon->value.'%' : number_format($coupon->value, 0, ',', ' ').' FCFA' }}</td>
                     <td class="px-6 py-4 text-grey">{{ $coupon->min_amount ? number_format($coupon->min_amount, 0, ',', ' ').' FCFA' : '—' }}</td>

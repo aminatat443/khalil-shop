@@ -16,6 +16,7 @@
 <form
     action="{{ $product->exists ? route('admin.products.update', $product) : route('admin.products.store') }}"
     method="POST"
+    enctype="multipart/form-data"
     class="mt-8 space-y-6"
 >
     @csrf
@@ -79,6 +80,20 @@
         @endforeach
     </div>
 
+    @unless($product->exists)
+        <div class="border-t border-secondary-shade/10 pt-6 dark:border-white/10">
+            <h2 class="text-xs font-semibold uppercase tracking-[0.2em] text-secondary-shade dark:text-white/70">Images</h2>
+            <div class="mt-4">
+                <x-image-dropzone name="images[]" />
+            </div>
+        </div>
+
+        <p class="border border-secondary-shade/10 bg-grey-tint px-4 py-3 text-xs text-grey dark:border-white/10 dark:bg-white/5 dark:text-white/50">
+            <i class="fa-solid fa-circle-info mr-1.5"></i>
+            Les variantes (taille / couleur / stock) pourront être ajoutées juste après la création du produit.
+        </p>
+    @endunless
+
     <div class="flex gap-4 pt-2">
         <a href="{{ route('admin.products.index') }}" class="px-8 py-4 text-xs font-semibold uppercase tracking-[0.15em] text-secondary-shade transition hover:text-primary">Annuler</a>
         <button type="submit" class="bg-secondary-shade px-8 py-4 text-xs font-semibold uppercase tracking-[0.15em] text-white transition hover:bg-primary">
@@ -102,26 +117,42 @@
         <h2 class="text-xs font-semibold uppercase tracking-[0.2em] text-secondary-shade">Images</h2>
 
         <div class="mt-5 grid grid-cols-4 gap-4">
-            @foreach($product->images as $image)
+            @foreach($product->images->sortBy('sort_order') as $image)
                 <div class="group relative aspect-square overflow-hidden bg-grey-tint">
-                    <img src="{{ $image->url }}" alt="{{ $image->alt }}" class="h-full w-full object-cover">
-                    <form action="{{ route('admin.products.images.destroy', [$product, $image]) }}" method="POST" class="absolute inset-0 flex items-center justify-center bg-secondary-shade/60 opacity-0 transition group-hover:opacity-100" onsubmit="return confirm('Supprimer cette image ?');">
-                        @csrf
-                        @method('DELETE')
-                        <button type="submit" class="text-white" aria-label="Supprimer">
-                            <i class="fa-solid fa-trash"></i>
-                        </button>
-                    </form>
+                    <img src="{{ img_url($image->url, 300, 300) }}" alt="{{ $image->alt }}" class="h-full w-full object-cover">
+
+                    @if($loop->first)
+                        <span class="absolute left-2 top-2 z-10 bg-secondary-shade px-2 py-1 text-[9px] font-semibold uppercase tracking-[0.1em] text-white">
+                            <i class="fa-solid fa-star mr-1"></i>Principale
+                        </span>
+                    @endif
+
+                    <div class="absolute inset-0 flex items-center justify-center gap-3 bg-secondary-shade/60 opacity-0 transition group-hover:opacity-100">
+                        @unless($loop->first)
+                            <form action="{{ route('admin.products.images.primary', [$product, $image]) }}" method="POST">
+                                @csrf
+                                <button type="submit" class="text-white" title="Définir comme photo principale" aria-label="Définir comme photo principale">
+                                    <i class="fa-regular fa-star"></i>
+                                </button>
+                            </form>
+                        @endunless
+                        <form action="{{ route('admin.products.images.destroy', [$product, $image]) }}" method="POST" onsubmit="return confirm('Supprimer cette image ?');">
+                            @csrf
+                            @method('DELETE')
+                            <button type="submit" class="text-white" title="Supprimer" aria-label="Supprimer">
+                                <i class="fa-solid fa-trash"></i>
+                            </button>
+                        </form>
+                    </div>
                 </div>
             @endforeach
         </div>
 
-        <form action="{{ route('admin.products.images.store', $product) }}" method="POST" enctype="multipart/form-data" class="mt-6 flex flex-wrap items-center gap-4">
+        <form action="{{ route('admin.products.images.store', $product) }}" method="POST" enctype="multipart/form-data" class="mt-6">
             @csrf
-            <input type="file" name="image" accept="image/*" required class="text-sm text-secondary-shade file:mr-4 file:border-0 file:bg-grey-tint file:px-4 file:py-2 file:text-xs file:font-semibold file:uppercase file:tracking-[0.1em]">
-            <button type="submit" class="bg-secondary-shade px-6 py-2.5 text-xs font-semibold uppercase tracking-[0.15em] text-white transition hover:bg-primary">Ajouter</button>
+            <x-image-dropzone name="images[]" :auto-submit="true" />
         </form>
-        <p class="mt-2 text-xs text-grey">Stockage local pour l'instant — l'intégration Cloudinary sera branchée ici (section 49 du cahier des charges).</p>
+        <p class="mt-2 text-xs text-grey">Déposez plusieurs photos à la fois — l'envoi se lance automatiquement. La première ajoutée devient la photo principale ; survolez une vignette ci-dessus pour en choisir une autre.</p>
     </div>
 
     {{-- Variantes (sections 27, 41, 45 du cahier des charges) --}}

@@ -33,16 +33,17 @@
                 <th class="px-6 py-4 font-medium">Prix</th>
                 <th class="px-6 py-4 font-medium">Stock</th>
                 <th class="px-6 py-4 font-medium">Statut</th>
+                <th class="px-6 py-4 font-medium">Vitrine</th>
                 <th class="px-6 py-4 font-medium"></th>
             </tr>
         </thead>
         <tbody class="divide-y divide-secondary-shade/10">
             @forelse($products as $product)
-                <tr>
+                <tr onclick="window.location='{{ route('admin.products.edit', $product) }}'" class="cursor-pointer transition hover:bg-grey-tint/40">
                     <td class="flex items-center gap-3 px-6 py-4">
                         <div class="h-12 w-10 shrink-0 overflow-hidden bg-grey-tint">
                             @if($image = $product->images->first()?->url)
-                                <img src="{{ $image }}" alt="" class="h-full w-full object-cover">
+                                <img src="{{ img_url($image, 80, 96) }}" alt="" class="h-full w-full object-cover">
                             @endif
                         </div>
                         <span class="font-medium text-secondary-shade">{{ $product->name }}</span>
@@ -55,13 +56,35 @@
                     <td class="px-6 py-4">
                         <span class="text-xs {{ $product->is_active ? 'text-primary' : 'text-grey' }}">{{ $product->is_active ? 'Actif' : 'Désactivé' }}</span>
                     </td>
-                    <td class="px-6 py-4 text-right">
+                    <td class="px-6 py-4" onclick="event.stopPropagation()">
+                        <div class="flex items-center gap-3">
+                            <form action="{{ route('admin.products.toggle', [$product, 'is_featured']) }}" method="POST">
+                                @csrf
+                                <button type="submit" title="{{ $product->is_featured ? 'Retirer du slider du hero' : 'Mettre dans le slider du hero' }}" class="text-sm {{ $product->is_featured ? 'text-primary' : 'text-grey/40 hover:text-secondary-shade' }}">
+                                    <i class="fa-solid fa-images"></i>
+                                </button>
+                            </form>
+                            <form action="{{ route('admin.products.toggle', [$product, 'is_new']) }}" method="POST">
+                                @csrf
+                                <button type="submit" title="{{ $product->is_new ? 'Retirer des nouveautés' : 'Mettre dans les nouveautés' }}" class="text-sm {{ $product->is_new ? 'text-primary' : 'text-grey/40 hover:text-secondary-shade' }}">
+                                    <i class="fa-solid fa-sparkles"></i>
+                                </button>
+                            </form>
+                            <form action="{{ route('admin.products.toggle', [$product, 'is_promo']) }}" method="POST">
+                                @csrf
+                                <button type="submit" title="{{ $product->is_promo ? 'Retirer des promotions' : 'Mettre en promotion' }}" class="text-sm {{ $product->is_promo ? 'text-primary' : 'text-grey/40 hover:text-secondary-shade' }}">
+                                    <i class="fa-solid fa-tag"></i>
+                                </button>
+                            </form>
+                        </div>
+                    </td>
+                    <td class="px-6 py-4 text-right" onclick="event.stopPropagation()">
                         <a href="{{ route('admin.products.edit', $product) }}" class="text-xs text-secondary-shade hover:text-primary">Modifier</a>
                     </td>
                 </tr>
             @empty
                 <tr>
-                    <td colspan="6" class="px-6 py-10 text-center text-grey">Aucun produit ne correspond à ces critères.</td>
+                    <td colspan="7" class="px-6 py-10 text-center text-grey">Aucun produit ne correspond à ces critères.</td>
                 </tr>
             @endforelse
         </tbody>

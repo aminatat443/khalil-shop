@@ -24,7 +24,7 @@
         </thead>
         <tbody class="divide-y divide-secondary-shade/10">
             @forelse($categories as $universe)
-                <tr>
+                <tr onclick="window.location='{{ route('admin.categories.edit', $universe) }}'" class="cursor-pointer transition hover:bg-grey-tint/40">
                     <td class="px-6 py-4 font-medium text-secondary-shade">{{ $universe->name }}</td>
                     <td class="px-6 py-4">
                         <span class="text-xs {{ $universe->is_active ? 'text-primary' : 'text-grey' }}">{{ $universe->is_active ? 'Active' : 'Désactivée' }}</span>
@@ -34,7 +34,7 @@
                     </td>
                 </tr>
                 @foreach($universe->children as $child)
-                    <tr class="bg-grey-tint/40">
+                    <tr onclick="window.location='{{ route('admin.categories.edit', $child) }}'" class="cursor-pointer bg-grey-tint/40 transition hover:bg-grey-tint">
                         <td class="px-6 py-3 pl-12 text-secondary-shade">
                             <i class="fa-solid fa-turn-up fa-rotate-90 mr-2 text-[10px] text-grey"></i>{{ $child->name }}
                         </td>

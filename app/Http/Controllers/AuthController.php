@@ -171,7 +171,9 @@ class AuthController extends Controller
 
         Auth::login($user);
 
-        return redirect()->route('home')->with('status', 'Votre adresse email est vérifiée, bienvenue !');
+        // Moment marquant → une modale centrée plutôt que le bandeau générique
+        // (voir components/email-verified-modal.blade.php).
+        return redirect()->route('home')->with('email_verified_message', 'Votre adresse email est vérifiée, bienvenue !');
     }
 
     /**

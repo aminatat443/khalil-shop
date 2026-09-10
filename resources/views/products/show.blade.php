@@ -16,6 +16,14 @@
 
 <div class="mx-auto max-w-[1600px] px-6 py-16 sm:px-10">
 
+    @php
+        $galleryImages = $product->images->map(fn ($img) => [
+            'main' => img_url($img->url, 800, 560, 'pad', 'ffffff'),
+            'thumb' => img_url($img->url, 160, 160),
+            'alt' => $img->alt ?? $product->name,
+        ]);
+    @endphp
+
     <div
         x-data="{
             colorId: null,
@@ -27,26 +35,91 @@
             get canAddToCart() {
                 return {{ $colors->isEmpty() && $sizes->isEmpty() ? 'true' : 'false' }} || (this.selectedVariant && this.selectedVariant.stock > 0);
             },
+            images: {{ $galleryImages->toJson() }},
+            active: 0,
+            lightbox: false,
+            next() { this.active = (this.active + 1) % this.images.length },
+            prev() { this.active = (this.active - 1 + this.images.length) % this.images.length },
         }"
         class="grid gap-20 md:grid-cols-2"
     >
         {{-- Galerie (sections 25-26) --}}
         <div class="space-y-3">
-            <div class="aspect-[4/5] overflow-hidden bg-grey-tint">
-                @if($image = $product->images->first()?->url)
-                    <img src="{{ $image }}" alt="{{ $product->name }}" class="h-full w-full object-cover">
-                @endif
+            <div class="group relative aspect-[10/7] overflow-hidden bg-grey-tint">
+                <template x-for="(img, i) in images" :key="i">
+                    <img
+                        x-show="active === i"
+                        :src="img.main"
+                        :alt="img.alt"
+                        @click="lightbox = true"
+                        class="h-full w-full cursor-zoom-in object-contain transition duration-500 ease-out group-hover:scale-110"
+                    >
+                </template>
+
+                <template x-if="images.length > 1">
+                    <div>
+                        <button
+                            type="button"
+                            @click.stop="prev()"
+                            class="absolute left-3 top-1/2 z-10 flex h-9 w-9 -translate-y-1/2 items-center justify-center bg-white/90 text-secondary-shade opacity-0 shadow transition hover:text-primary group-hover:opacity-100"
+                            aria-label="Image précédente"
+                        >
+                            <i class="fa-solid fa-chevron-left text-xs"></i>
+                        </button>
+                        <button
+                            type="button"
+                            @click.stop="next()"
+                            class="absolute right-3 top-1/2 z-10 flex h-9 w-9 -translate-y-1/2 items-center justify-center bg-white/90 text-secondary-shade opacity-0 shadow transition hover:text-primary group-hover:opacity-100"
+                            aria-label="Image suivante"
+                        >
+                            <i class="fa-solid fa-chevron-right text-xs"></i>
+                        </button>
+                    </div>
+                </template>
             </div>
 
             @if($product->images->count() > 1)
                 <div class="grid grid-cols-4 gap-3">
-                    @foreach($product->images->skip(1) as $img)
-                        <div class="aspect-square overflow-hidden bg-grey-tint">
-                            <img src="{{ $img->url }}" alt="{{ $img->alt ?? $product->name }}" class="h-full w-full object-cover">
-                        </div>
-                    @endforeach
+                    <template x-for="(img, i) in images" :key="i">
+                        <button
+                            type="button"
+                            @click="active = i"
+                            :class="active === i ? 'ring-2 ring-primary' : 'opacity-70 hover:opacity-100'"
+                            class="aspect-square overflow-hidden bg-grey-tint transition"
+                        >
+                            <img :src="img.thumb" :alt="img.alt" class="h-full w-full object-cover">
+                        </button>
+                    </template>
                 </div>
             @endif
+        </div>
+
+        {{-- Vue agrandie --}}
+        <div
+            x-show="lightbox"
+            x-cloak
+            x-transition:enter="transition ease-out duration-200" x-transition:enter-start="opacity-0" x-transition:enter-end="opacity-100"
+            x-transition:leave="transition ease-in duration-150" x-transition:leave-start="opacity-100" x-transition:leave-end="opacity-0"
+            @click="lightbox = false"
+            @keydown.escape.window="lightbox = false"
+            class="fixed inset-0 z-[80] flex items-center justify-center bg-secondary-shade/90 p-6"
+        >
+            <button type="button" @click="lightbox = false" class="absolute right-6 top-6 text-white transition hover:text-primary" aria-label="Fermer">
+                <i class="fa-solid fa-xmark text-2xl"></i>
+            </button>
+            <template x-if="images.length > 1">
+                <button type="button" @click.stop="prev()" class="absolute left-4 top-1/2 -translate-y-1/2 text-white transition hover:text-primary sm:left-8" aria-label="Image précédente">
+                    <i class="fa-solid fa-chevron-left text-xl"></i>
+                </button>
+            </template>
+            <template x-for="(img, i) in images" :key="i">
+                <img x-show="active === i" @click.stop :src="img.main" :alt="img.alt" class="max-h-[88vh] max-w-[88vw] object-contain">
+            </template>
+            <template x-if="images.length > 1">
+                <button type="button" @click.stop="next()" class="absolute right-4 top-1/2 -translate-y-1/2 text-white transition hover:text-primary sm:right-8" aria-label="Image suivante">
+                    <i class="fa-solid fa-chevron-right text-xl"></i>
+                </button>
+            </template>
         </div>
 
         {{-- Infos produit --}}
@@ -221,4 +294,24 @@
     </div>
 
 </div>
+
+@if($relatedProducts->isNotEmpty())
+    <section class="border-t border-secondary-shade/10">
+        <div class="mx-auto max-w-[1600px] px-6 py-16 sm:px-10">
+            <p class="text-xs font-medium uppercase tracking-[0.35em] text-grey">Vous pourriez aimer</p>
+            <h2 class="mt-3 font-display text-3xl font-normal italic text-secondary-shade">Cela pourrait vous intéresser</h2>
+
+            <div class="mt-10">
+                <x-horizontal-scroller>
+                    @foreach($relatedProducts as $related)
+                        <div class="w-[46vw] shrink-0 sm:w-[220px]">
+                            <x-product-card :product="$related" />
+                        </div>
+                    @endforeach
+                </x-horizontal-scroller>
+            </div>
+        </div>
+    </section>
+@endif
+
 @endsection

@@ -47,9 +47,18 @@ class CatalogController extends Controller
 
         $products = $query->paginate(20)->withQueryString();
 
+        // Bornes du curseur de prix — indépendantes du filtre prix courant, pour que la plage
+        // ne se rétrécisse pas au fil des allers-retours.
+        $priceBounds = Product::where('is_active', true)
+            ->whereIn('category_id', $categoryIds)
+            ->selectRaw('MIN(price) as min, MAX(price) as max')
+            ->first();
+
         return view('products.index', [
             'category' => $category,
             'products' => $products,
+            'priceFloor' => (int) ($priceBounds->min ?? 0),
+            'priceCeil' => (int) ($priceBounds->max ?? 0),
         ]);
     }
 }

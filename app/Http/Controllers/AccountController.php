@@ -20,7 +20,7 @@ class AccountController extends Controller
     {
         return view('account.index', [
             'user' => auth()->user(),
-            'recentOrders' => auth()->user()->orders()->latest()->take(3)->get(),
+            'recentOrders' => auth()->user()->orders()->latest()->withCount('items')->with('items.returns')->take(3)->get(),
             'defaultAddress' => auth()->user()->addresses()->where('is_default', true)->first(),
         ]);
     }
@@ -57,7 +57,7 @@ class AccountController extends Controller
     public function orders(): View
     {
         return view('account.orders', [
-            'orders' => auth()->user()->orders()->latest()->paginate(10),
+            'orders' => auth()->user()->orders()->latest()->withCount('items')->with('items.returns')->paginate(10),
         ]);
     }
 
@@ -72,16 +72,13 @@ class AccountController extends Controller
     }
 
     /**
-     * Suppression définitive du compte, confirmée par le mot de passe. Les commandes déjà
-     * passées sont conservées (user_id mis à null) ; adresses, avis et favoris sont supprimés
-     * en cascade (contraintes de la base de données).
+     * Suppression définitive du compte, confirmée par une alerte côté client (pas de mot de
+     * passe demandé : certains comptes se connectent uniquement via Google et n'en ont pas).
+     * Les commandes déjà passées sont conservées (user_id mis à null) ; adresses, avis et
+     * favoris sont supprimés en cascade (contraintes de la base de données).
      */
     public function destroy(Request $request): RedirectResponse
     {
-        $request->validate([
-            'password' => ['required', 'current_password'],
-        ]);
-
         $user = auth()->user();
 
         Auth::logout();

@@ -45,6 +45,15 @@ class User extends Authenticatable implements MustVerifyEmail
         return in_array($this->role, [Role::Gestionnaire, Role::Admin, Role::SuperAdmin], true);
     }
 
+    /**
+     * Équipe KhalilShop (Gestionnaire/Admin/Super Admin) — destinataires des notifications
+     * internes (nouvelle commande, nouvelle demande de retour...).
+     */
+    public function scopeStaff($query)
+    {
+        return $query->whereIn('role', [Role::Gestionnaire, Role::Admin, Role::SuperAdmin]);
+    }
+
     public function orders(): HasMany
     {
         return $this->hasMany(Order::class);

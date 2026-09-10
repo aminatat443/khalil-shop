@@ -39,16 +39,16 @@
         </thead>
         <tbody class="divide-y divide-secondary-shade/10">
             @forelse($orders as $order)
-                <tr>
+                <tr onclick="window.location='{{ route('admin.orders.show', $order) }}'" class="cursor-pointer transition hover:bg-grey-tint/40">
                     <td class="px-6 py-4 font-medium text-secondary-shade">{{ $order->order_number }}</td>
                     <td class="px-6 py-4 text-grey">{{ $order->customer_name }}</td>
                     <td class="px-6 py-4 text-secondary-shade">{{ number_format($order->total, 0, ',', ' ') }} FCFA</td>
                     <td class="px-6 py-4 text-grey">{{ $order->payment_status === 'paid' ? 'Payé' : 'En attente' }}</td>
-                    <td class="px-6 py-4">
-                        <span class="text-xs {{ $order->status === 'annulee' ? 'text-primary' : 'text-secondary-shade' }}">{{ $statusLabels[$order->status] ?? $order->status }}</span>
+                    <td class="px-6 py-4" onclick="event.stopPropagation()">
+                        <x-order-status-badge :order="$order" />
                     </td>
                     <td class="px-6 py-4 text-xs text-grey">{{ $order->created_at->format('d/m/Y H:i') }}</td>
-                    <td class="px-6 py-4 text-right">
+                    <td class="px-6 py-4 text-right" onclick="event.stopPropagation()">
                         <a href="{{ route('orders.invoice', $order) }}" target="_blank" class="mr-4 text-xs text-secondary-shade hover:text-primary" aria-label="Facture">
                             <i class="fa-solid fa-file-invoice"></i>
                         </a>

@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Models\Order;
+use App\Models\Setting;
 use Barryvdh\DomPDF\Facade\Pdf;
 use Illuminate\Http\Request;
 use Illuminate\Http\Response;
@@ -24,7 +25,8 @@ class InvoiceController extends Controller
 
         $order->load('items', 'coupon');
 
-        $pdf = Pdf::loadView('pdf.invoice', ['order' => $order]);
+        $pdf = Pdf::loadView('pdf.invoice', ['order' => $order, 'settings' => Setting::current()])
+            ->setPaper('a4');
 
         return $pdf->stream('facture-'.$order->order_number.'.pdf');
     }

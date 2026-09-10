@@ -6,9 +6,11 @@ use App\Http\Controllers\Controller;
 use App\Models\Category;
 use App\Models\Color;
 use App\Models\Product;
+use App\Models\Setting;
 use App\Models\Size;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Str;
 use Illuminate\View\View;
 
@@ -52,12 +54,33 @@ class ProductController extends Controller
     {
         $this->authorize('create', Product::class);
 
+        $request->validate([
+            'images' => ['nullable', 'array'],
+            'images.*' => ['image', 'max:4096'],
+        ]);
+
         $data = $this->validated($request);
         $data['slug'] = $this->uniqueSlug($data['name']);
 
         $product = Product::create($data);
 
-        return redirect()->route('admin.products.edit', $product)->with('status', 'Produit créé. Ajoutez maintenant ses images et variantes.');
+        if ($request->hasFile('images')) {
+            $disk = Setting::mediaDisk();
+            $sortOrder = 0;
+
+            foreach ($request->file('images') as $file) {
+                $path = $file->store('products', $disk);
+
+                $product->images()->create([
+                    'url' => Storage::disk($disk)->url($path),
+                    'public_id' => $disk === 'cloudinary' ? $path : null,
+                    'alt' => $product->name,
+                    'sort_order' => $sortOrder++,
+                ]);
+            }
+        }
+
+        return redirect()->route('admin.products.edit', $product)->with('status', 'Produit créé.');
     }
 
     public function edit(Product $product): View
@@ -87,6 +110,21 @@ class ProductController extends Controller
         $product->update($data);
 
         return redirect()->route('admin.products.edit', $product)->with('status', 'Produit mis à jour.');
+    }
+
+    /**
+     * Bascule rapide "vedette" (slider du hero) / "nouveauté", directement depuis la liste,
+     * sans passer par le formulaire d'édition.
+     */
+    public function toggleFlag(Request $request, Product $product, string $flag): RedirectResponse
+    {
+        $this->authorize('update', $product);
+
+        abort_unless(in_array($flag, ['is_featured', 'is_new', 'is_promo'], true), 404);
+
+        $product->update([$flag => ! $product->$flag]);
+
+        return back();
     }
 
     public function destroy(Product $product): RedirectResponse

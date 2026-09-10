@@ -12,6 +12,7 @@
         zones: @js($deliveries->map(fn ($d) => ['id' => $d->id, 'zone' => $d->zone, 'fee' => $d->fee])->values()),
         locating: false,
         locationError: null,
+        addressError: null,
         next() { if (this.step < 4) this.step++; window.scrollTo({ top: 0, behavior: 'smooth' }); },
         prev() { if (this.step > 1) this.step--; window.scrollTo({ top: 0, behavior: 'smooth' }); },
         matchZone(city, region) {
@@ -88,12 +89,15 @@
     </div>
 
     @if($errors->any())
-        <div class="mt-6 border border-primary/30 bg-primary-tint px-5 py-4 text-sm text-primary-shade">
+        <div x-data="{ show: true }" x-show="show" class="mt-6 flex items-start justify-between gap-4 border border-red-200 bg-red-50 px-5 py-4 text-sm text-red-700">
             <ul class="list-disc space-y-1 pl-5">
                 @foreach($errors->all() as $error)
                     <li>{{ $error }}</li>
                 @endforeach
             </ul>
+            <button type="button" @click="show = false" aria-label="Fermer" class="shrink-0 text-red-700/60 transition hover:text-red-700">
+                <i class="fa-solid fa-xmark"></i>
+            </button>
         </div>
     @endif
 
@@ -148,7 +152,7 @@
                 <span x-text="locating ? 'Localisation…' : 'Utiliser ma position actuelle'"></span>
             </button>
             <template x-if="locationError">
-                <p class="mt-2 text-xs text-primary" x-text="locationError"></p>
+                <p class="mt-2 text-xs text-red-600" x-text="locationError"></p>
             </template>
 
             <div class="mt-6 space-y-6">
@@ -179,8 +183,8 @@
                     </div>
                 </div>
                 <div>
-                    <label class="mb-1.5 block text-xs font-semibold uppercase tracking-[0.15em] text-secondary-shade">Complément d'adresse</label>
-                    <input x-ref="addressInput" type="text" name="delivery_address" value="{{ old('delivery_address', $defaultAddress->address ?? '') }}" placeholder="Numéro de rue, villa, repère…" required class="w-full border-b border-secondary-shade/20 bg-transparent py-2 text-sm text-secondary-shade outline-none focus:border-primary">
+                    <label class="mb-1.5 block text-xs font-semibold uppercase tracking-[0.15em] text-secondary-shade">Complément d'adresse (optionnel)</label>
+                    <input x-ref="addressInput" type="text" name="delivery_address" value="{{ old('delivery_address', $defaultAddress->address ?? '') }}" placeholder="Numéro de rue, villa, repère…" class="w-full border-b border-secondary-shade/20 bg-transparent py-2 text-sm text-secondary-shade outline-none focus:border-primary">
                 </div>
                 <div>
                     <label class="mb-1.5 block text-xs font-semibold uppercase tracking-[0.15em] text-secondary-shade">Instructions (optionnel)</label>
@@ -217,11 +221,24 @@
                 <span class="text-sm font-semibold text-secondary-shade" x-text="deliveryFee > 0 ? (new Intl.NumberFormat('fr-FR').format(deliveryFee) + ' FCFA') : 'À discuter sur WhatsApp'"></span>
             </div>
 
+            <template x-if="addressError">
+                <p class="mt-4 border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700" x-text="addressError"></p>
+            </template>
+
             <div class="mt-10 flex gap-4">
                 <button type="button" @click="prev()" class="px-8 py-4 text-xs font-semibold uppercase tracking-[0.15em] text-secondary-shade transition hover:text-primary">Retour</button>
                 <button
                     type="button"
-                    @click="if (! $refs.regionInput.value.trim() || ! $refs.cityInput.value.trim()) { alert('Merci de renseigner la région et la ville avant de continuer.'); } else { next(); }"
+                    @click="
+                        if (! $refs.regionInput.value.trim() || ! $refs.cityInput.value.trim()) {
+                            addressError = 'Merci de renseigner la région et la ville avant de continuer.';
+                        } else if (! deliveryId) {
+                            addressError = 'Merci de choisir une zone de livraison avant de continuer.';
+                        } else {
+                            addressError = null;
+                            next();
+                        }
+                    "
                     class="bg-secondary-shade px-8 py-4 text-xs font-semibold uppercase tracking-[0.15em] text-white transition hover:bg-primary"
                 >Continuer</button>
             </div>

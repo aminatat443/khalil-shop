@@ -19,38 +19,69 @@
         <p class="text-xs uppercase tracking-[0.1em] text-grey">{{ $products->total() }} produit(s)</p>
     </div>
 
-    <div class="grid gap-16 md:grid-cols-[220px_1fr]">
+    <div class="grid gap-16 md:grid-cols-[260px_1fr]">
 
         {{-- Filtres (section 21) --}}
         <aside class="h-fit">
-            <form method="GET" class="space-y-10">
-
-                <div>
-                    <h3 class="mb-4 text-xs font-semibold uppercase tracking-[0.2em] text-secondary-shade">Prix (FCFA)</h3>
-                    <div class="flex items-center gap-3">
-                        <input type="number" name="prix_min" value="{{ request('prix_min') }}" placeholder="Min" class="w-full border-b border-secondary-shade/20 bg-transparent py-1.5 text-sm text-secondary-shade outline-none placeholder:text-grey/40 focus:border-primary">
-                        <span class="text-grey/40">–</span>
-                        <input type="number" name="prix_max" value="{{ request('prix_max') }}" placeholder="Max" class="w-full border-b border-secondary-shade/20 bg-transparent py-1.5 text-sm text-secondary-shade outline-none placeholder:text-grey/40 focus:border-primary">
-                    </div>
+            <form
+                method="GET"
+                x-data="{ loading: false, active: {{ (request()->boolean('nouveautes') ? 1 : 0) + (request()->boolean('promotions') ? 1 : 0) + (request()->filled('prix_min') || request()->filled('prix_max') ? 1 : 0) }} }"
+                @submit="loading = true"
+                :class="loading && 'opacity-50'"
+                class="space-y-8 border border-secondary-shade/10 bg-white p-6 shadow-sm transition-opacity dark:border-white/10 dark:bg-[#16201f]"
+            >
+                <div class="flex items-center justify-between">
+                    <h2 class="flex items-center gap-2 text-xs font-semibold uppercase tracking-[0.2em] text-secondary-shade dark:text-white/80">
+                        <i class="fa-solid fa-sliders text-primary"></i>Filtres
+                    </h2>
+                    <span x-show="active > 0" x-cloak x-text="active" class="flex h-5 w-5 items-center justify-center rounded-full bg-primary text-[10px] font-bold text-white"></span>
                 </div>
 
-                <div class="space-y-3">
-                    <h3 class="mb-1 text-xs font-semibold uppercase tracking-[0.2em] text-secondary-shade">Filtres</h3>
-                    <label class="flex items-center gap-2.5 text-sm text-secondary-shade">
-                        <input type="checkbox" name="nouveautes" value="1" @checked(request('nouveautes')) class="h-4 w-4 border-gray-300 text-primary focus:ring-primary">
-                        Nouveautés
+                @if($priceCeil > $priceFloor)
+                    <div class="border-t border-secondary-shade/10 pt-6 dark:border-white/10">
+                        <h3 class="mb-5 text-xs font-semibold uppercase tracking-[0.2em] text-secondary-shade dark:text-white/70">Prix</h3>
+                        <x-price-range-slider :min="$priceFloor" :max="$priceCeil" :selected-min="request('prix_min')" :selected-max="request('prix_max')" />
+                    </div>
+                @endif
+
+                <div class="space-y-3 border-t border-secondary-shade/10 pt-6 dark:border-white/10">
+                    <h3 class="mb-1 text-xs font-semibold uppercase tracking-[0.2em] text-secondary-shade dark:text-white/70">Collection</h3>
+
+                    <label class="group flex cursor-pointer items-center justify-between py-1">
+                        <span class="flex items-center gap-2.5 text-sm text-secondary-shade dark:text-white/80">
+                            <i class="fa-solid fa-sparkles text-xs text-grey/50 group-has-[:checked]:text-primary"></i>
+                            Nouveautés
+                        </span>
+                        <input type="checkbox" name="nouveautes" value="1" @checked(request('nouveautes')) @change="$el.form.requestSubmit()" class="peer sr-only">
+                        <span class="relative h-5 w-9 shrink-0 rounded-full bg-grey-tint transition peer-checked:bg-primary dark:bg-white/10">
+                            <span class="absolute left-0.5 top-0.5 h-4 w-4 rounded-full bg-white shadow transition peer-checked:translate-x-4"></span>
+                        </span>
                     </label>
-                    <label class="flex items-center gap-2.5 text-sm text-secondary-shade">
-                        <input type="checkbox" name="promotions" value="1" @checked(request('promotions')) class="h-4 w-4 border-gray-300 text-primary focus:ring-primary">
-                        Promotions
+                    <label class="group flex cursor-pointer items-center justify-between py-1">
+                        <span class="flex items-center gap-2.5 text-sm text-secondary-shade dark:text-white/80">
+                            <i class="fa-solid fa-tag text-xs text-grey/50 group-has-[:checked]:text-primary"></i>
+                            Promotions
+                        </span>
+                        <input type="checkbox" name="promotions" value="1" @checked(request('promotions')) @change="$el.form.requestSubmit()" class="peer sr-only">
+                        <span class="relative h-5 w-9 shrink-0 rounded-full bg-grey-tint transition peer-checked:bg-primary dark:bg-white/10">
+                            <span class="absolute left-0.5 top-0.5 h-4 w-4 rounded-full bg-white shadow transition peer-checked:translate-x-4"></span>
+                        </span>
                     </label>
                 </div>
 
                 <input type="hidden" name="tri" value="{{ request('tri') }}">
 
-                <button type="submit" class="w-full bg-secondary-shade px-4 py-3.5 text-xs font-semibold uppercase tracking-[0.15em] text-white transition hover:bg-primary">
-                    Filtrer
-                </button>
+                @if(request()->filled('prix_min') || request()->filled('prix_max') || request()->boolean('nouveautes') || request()->boolean('promotions'))
+                    <a href="{{ route('catalog.show', $category) }}" class="block border-t border-secondary-shade/10 pt-5 text-center text-xs font-semibold uppercase tracking-[0.1em] text-grey transition hover:text-primary dark:border-white/10 dark:text-white/50">
+                        Réinitialiser les filtres
+                    </a>
+                @endif
+
+                <noscript>
+                    <button type="submit" class="w-full bg-secondary-shade px-4 py-3.5 text-xs font-semibold uppercase tracking-[0.15em] text-white transition hover:bg-primary">
+                        Filtrer
+                    </button>
+                </noscript>
             </form>
         </aside>
 

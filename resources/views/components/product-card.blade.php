@@ -4,7 +4,7 @@
     $price = number_format($product->price, 0, ',', ' ');
     $oldPrice = $product->old_price ? number_format($product->old_price, 0, ',', ' ') : null;
     $discount = $product->old_price ? (int) round((1 - $product->price / $product->old_price) * 100) : null;
-    $image = $product->images->first()?->url;
+    $image = img_url($product->images->first()?->url, 500, 625);
 @endphp
 
 <div x-data class="group relative">

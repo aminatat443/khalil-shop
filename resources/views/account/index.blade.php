@@ -3,25 +3,31 @@
 @section('title', 'Mon profil — KhalilShop')
 
 @section('content')
-<div class="mx-auto max-w-3xl px-6 py-16 sm:px-10">
+<div class="mx-auto max-w-4xl px-6 py-16 sm:px-10">
 
-    <h1 class="font-display text-4xl font-normal italic text-secondary-shade">Mon profil</h1>
-
-    <div class="mt-10 grid gap-6 sm:grid-cols-2">
-        <div class="border border-secondary-shade/10 p-6">
-            <p class="text-xs font-semibold uppercase tracking-[0.15em] text-grey">Nom</p>
-            <p class="mt-1 text-sm text-secondary-shade">{{ $user->name }}</p>
+    <div class="flex items-center gap-5">
+        <div class="flex h-16 w-16 shrink-0 items-center justify-center bg-secondary-shade font-display text-2xl italic text-white">
+            {{ mb_strtoupper(mb_substr($user->name, 0, 1)) }}
         </div>
-        <div class="border border-secondary-shade/10 p-6">
-            <p class="text-xs font-semibold uppercase tracking-[0.15em] text-grey">Email</p>
-            <p class="mt-1 text-sm text-secondary-shade">{{ $user->email }}</p>
+        <div>
+            <h1 class="font-display text-3xl font-normal italic text-secondary-shade sm:text-4xl">{{ $user->name }}</h1>
+            <p class="mt-0.5 text-sm text-grey">{{ $user->email }}</p>
         </div>
     </div>
+
+    @unless($user->isGestionnaire())
+        <div class="mt-10">
+            <x-account-nav active="profil" />
+        </div>
+    @endunless
 
     {{-- Le staff n'achète pas sur la boutique, pas besoin d'adresse de livraison. --}}
     @unless($user->isGestionnaire())
         <div id="adresse" class="mt-10 scroll-mt-24">
-            <h2 class="text-xs font-semibold uppercase tracking-[0.2em] text-secondary-shade">Adresse de livraison</h2>
+            <div class="flex items-center gap-2.5">
+                <i class="fa-solid fa-location-dot text-sm text-primary"></i>
+                <h2 class="text-xs font-semibold uppercase tracking-[0.2em] text-secondary-shade">Adresse de livraison</h2>
+            </div>
             <p class="mt-2 text-sm text-grey">
                 Enregistrez votre adresse une fois pour toutes : elle sera proposée automatiquement à chaque commande, pour aller plus vite.
             </p>
@@ -29,7 +35,7 @@
             <form
                 action="{{ route('account.address.update') }}"
                 method="POST"
-                class="mt-6 max-w-xl space-y-6 border border-secondary-shade/10 p-6"
+                class="mt-6 space-y-6 border border-secondary-shade/10 bg-white p-6 shadow-sm sm:p-8"
                 x-data="{
                     locating: false,
                     locationError: null,
@@ -48,10 +54,8 @@
                                     const data = await response.json();
                                     const addr = data.address || {};
                                     const region = addr.state || addr.region || '';
-                                    // La ville retient l'échelon le plus précis (quartier/commune).
                                     const city = addr.suburb || addr.neighbourhood || addr.quarter || addr.city_district
                                         || addr.city || addr.town || addr.village || addr.county || '';
-                                    // Localisation précise : numéro de rue si disponible.
                                     const street = [addr.house_number, addr.road].filter(Boolean).join(' ');
 
                                     if (this.$refs.regionInput && region) this.$refs.regionInput.value = region;
@@ -99,7 +103,7 @@
                         <span x-text="locating ? 'Localisation…' : 'Utiliser ma position actuelle'"></span>
                     </button>
                     <template x-if="locationError">
-                        <p class="mt-2 text-xs text-primary" x-text="locationError"></p>
+                        <p class="mt-2 text-xs text-red-600" x-text="locationError"></p>
                     </template>
                 </div>
 
@@ -132,48 +136,56 @@
     {{-- Le staff (Gestionnaire/Admin/Super Admin) n'achète pas sur la boutique : pas d'historique
          de commandes pour ces rôles, seul le profil est pertinent. --}}
     @unless($user->isGestionnaire())
-        <div class="mt-10 flex items-center justify-between">
-            <h2 class="text-xs font-semibold uppercase tracking-[0.2em] text-secondary-shade">Commandes récentes</h2>
+        <div class="mt-12 flex items-center justify-between">
+            <div class="flex items-center gap-2.5">
+                <i class="fa-solid fa-bag-shopping text-sm text-primary"></i>
+                <h2 class="text-xs font-semibold uppercase tracking-[0.2em] text-secondary-shade">Commandes récentes</h2>
+            </div>
             <a href="{{ route('account.orders') }}" class="text-xs font-semibold text-primary hover:underline">Tout voir</a>
         </div>
 
-        <div class="mt-4 divide-y divide-secondary-shade/10 border-t border-secondary-shade/10">
+        <div class="mt-4 space-y-3">
             @forelse($recentOrders as $order)
-                <a href="{{ route('account.orders.show', $order) }}" class="flex items-center justify-between py-4 text-sm hover:text-primary">
-                    <span>
+                <a href="{{ route('account.orders.show', $order) }}" class="flex items-center justify-between gap-4 border border-secondary-shade/10 bg-white p-5 text-sm shadow-sm transition hover:border-primary/40 hover:shadow-md">
+                    <div>
                         <span class="font-medium text-secondary-shade">{{ $order->order_number }}</span>
-                        <span class="ml-2 text-xs text-grey">{{ $order->created_at->format('d/m/Y') }}</span>
-                    </span>
-                    <span class="text-xs font-medium text-secondary-shade">{{ number_format($order->total, 0, ',', ' ') }} FCFA</span>
+                        <span class="ml-2 text-xs text-grey">{{ $order->created_at->format('d/m/Y') }} · {{ $order->items_count }} article(s)</span>
+                    </div>
+                    <div class="flex items-center gap-4">
+                        @php($returnInfo = $order->returnStatusInfo())
+                        <x-status-pill :tone="$returnInfo['tone'] ?? (\App\Models\Order::STATUS_TONES[$order->status] ?? 'neutral')" :label="$returnInfo['label'] ?? (\App\Models\Order::STATUS_LABELS[$order->status] ?? $order->status)" />
+                        <span class="text-xs font-medium text-secondary-shade">{{ number_format($order->total, 0, ',', ' ') }} FCFA</span>
+                        <i class="fa-solid fa-chevron-right text-[10px] text-grey/50"></i>
+                    </div>
                 </a>
             @empty
-                <p class="py-6 text-sm text-grey">Aucune commande pour le moment.</p>
+                <div class="flex flex-col items-center justify-center border border-dashed border-secondary-shade/15 py-16 text-center">
+                    <i class="fa-solid fa-bag-shopping mb-4 text-2xl text-secondary-shade/20"></i>
+                    <p class="text-sm text-grey">Aucune commande pour le moment.</p>
+                </div>
             @endforelse
         </div>
     @endunless
 
-    {{-- Suppression du compte --}}
-    <div class="mt-16 border border-primary/20 p-6" x-data="{ confirming: false }">
-        <h2 class="text-xs font-semibold uppercase tracking-[0.2em] text-primary">Zone dangereuse</h2>
+    {{-- Suppression du compte — confirmation par alerte (pas de mot de passe demandé : les
+         comptes connectés uniquement via Google n'en ont pas). --}}
+    <div class="mt-16 border border-red-200 bg-red-50 p-6">
+        <h2 class="text-xs font-semibold uppercase tracking-[0.2em] text-red-700">Zone dangereuse</h2>
         <p class="mt-2 text-sm text-grey">
             La suppression de votre compte est définitive et ne peut pas être annulée.
         </p>
 
-        <button type="button" x-show="! confirming" @click="confirming = true" class="mt-4 text-xs font-semibold uppercase tracking-[0.1em] text-primary hover:underline">
-            Supprimer mon compte
-        </button>
-
-        <form x-show="confirming" x-cloak action="{{ route('account.destroy') }}" method="POST" class="mt-4 max-w-sm space-y-4">
+        <form
+            action="{{ route('account.destroy') }}"
+            method="POST"
+            class="mt-4"
+            onsubmit="return confirm('Supprimer définitivement votre compte KhalilShop ? Cette action est irréversible.');"
+        >
             @csrf
             @method('DELETE')
-            <div>
-                <label class="mb-1.5 block text-xs font-semibold uppercase tracking-[0.15em] text-secondary-shade">Confirmez avec votre mot de passe</label>
-                <input type="password" name="password" required class="w-full border-b border-secondary-shade/20 bg-transparent py-2 text-sm text-secondary-shade outline-none focus:border-primary">
-            </div>
-            <div class="flex gap-4">
-                <button type="button" @click="confirming = false" class="px-6 py-3 text-xs font-semibold uppercase tracking-[0.1em] text-secondary-shade transition hover:text-primary">Annuler</button>
-                <button type="submit" class="bg-primary px-6 py-3 text-xs font-semibold uppercase tracking-[0.1em] text-white transition hover:bg-primary-shade">Supprimer définitivement</button>
-            </div>
+            <button type="submit" class="bg-red-600 px-6 py-3 text-xs font-semibold uppercase tracking-[0.1em] text-white transition hover:bg-red-700">
+                Supprimer mon compte
+            </button>
         </form>
     </div>
 

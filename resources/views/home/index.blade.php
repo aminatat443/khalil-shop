@@ -5,7 +5,7 @@
 @section('content')
 
 {{-- Hero principal (section 12) --}}
-<section class="mx-auto grid max-w-[1600px] items-center gap-12 px-6 py-14 sm:px-10 md:h-[34rem] md:grid-cols-[minmax(0,0.9fr)_minmax(0,1.1fr)] md:py-0">
+<section class="mx-auto grid max-w-[1600px] items-center gap-12 px-6 py-14 sm:px-10 md:h-[26rem] md:grid-cols-[minmax(0,0.9fr)_minmax(0,1.1fr)] md:py-0">
 
     <div>
 
@@ -43,7 +43,7 @@
     </div>
 
 
-    <div class="relative hidden h-[26rem] md:block md:h-full">
+    <div class="relative hidden h-[20rem] md:block md:h-full">
 
         @if($heroSlides->isNotEmpty())
             <div
@@ -123,7 +123,7 @@
 
 {{-- Section catégories (section 13) --}}
 @if($universes->isNotEmpty())
-<section class="border-t border-secondary-shade/10">
+<section>
     <div class="mx-auto max-w-[1600px] px-6 py-16 sm:px-10">
 
         <p class="text-xs font-medium uppercase tracking-[0.35em] text-grey">Univers</p>
@@ -171,8 +171,28 @@
             </a>
         </div>
 
-        <div class="grid grid-cols-2 gap-x-6 gap-y-10 sm:grid-cols-3 lg:grid-cols-4">
+        <div class="grid grid-cols-2 gap-x-5 gap-y-8 sm:grid-cols-4 lg:grid-cols-5">
             @foreach($newProducts as $product)
+                <x-product-card :product="$product" />
+            @endforeach
+        </div>
+    </div>
+</section>
+@endif
+
+
+{{-- Section Promotions (section 19) --}}
+@if($promoProducts->isNotEmpty())
+<section class="border-t border-secondary-shade/10">
+    <div class="mx-auto max-w-[1600px] px-6 py-16 sm:px-10">
+
+        <div class="mb-10 bg-primary-tint px-10 py-12 text-center">
+            <p class="text-xs font-semibold uppercase tracking-[0.35em] text-primary-shade">Sale</p>
+            <p class="mt-3 font-display text-6xl font-normal italic text-secondary-shade">Jusqu'à -50%</p>
+        </div>
+
+        <div class="grid grid-cols-2 gap-x-5 gap-y-8 sm:grid-cols-4 lg:grid-cols-5">
+            @foreach($promoProducts as $product)
                 <x-product-card :product="$product" />
             @endforeach
         </div>
@@ -199,7 +219,7 @@
                 </a>
             </div>
 
-            <div class="grid grid-cols-2 gap-x-6 gap-y-10 sm:grid-cols-3 lg:grid-cols-4">
+            <div class="grid grid-cols-2 gap-x-5 gap-y-8 sm:grid-cols-4 lg:grid-cols-5">
                 @foreach($items as $product)
                     <x-product-card :product="$product" />
                 @endforeach
@@ -207,25 +227,5 @@
         </div>
     </section>
 @endforeach
-
-
-{{-- Section Promotions (section 19) --}}
-@if($promoProducts->isNotEmpty())
-<section class="border-t border-secondary-shade/10">
-    <div class="mx-auto max-w-[1600px] px-6 py-16 sm:px-10">
-
-        <div class="mb-10 bg-primary-tint px-10 py-12 text-center">
-            <p class="text-xs font-semibold uppercase tracking-[0.35em] text-primary-shade">Sale</p>
-            <p class="mt-3 font-display text-6xl font-normal italic text-secondary-shade">Jusqu'à -50%</p>
-        </div>
-
-        <div class="grid grid-cols-2 gap-x-6 gap-y-10 sm:grid-cols-3 lg:grid-cols-4">
-            @foreach($promoProducts as $product)
-                <x-product-card :product="$product" />
-            @endforeach
-        </div>
-    </div>
-</section>
-@endif
 
 @endsection
