@@ -15,6 +15,10 @@ return Application::configure(basePath: dirname(__DIR__))
             'staff' => \App\Http\Middleware\EnsureUserIsStaff::class,
         ]);
 
+        // Volet prévention (IPS) de la surveillance applicative — avant toute route, sur
+        // l'ensemble du site.
+        $middleware->web(append: [\App\Http\Middleware\CheckBlockedIp::class]);
+
         // Pas de page de connexion dédiée (fenêtre flottante uniquement) — un invité qui tente
         // d'accéder à une page protégée est renvoyé à l'accueil avec la modale de connexion ouverte.
         $middleware->redirectGuestsTo(fn () => route('home', ['login' => 1]));

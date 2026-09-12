@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Admin;
 use App\Enums\Role;
 use App\Http\Controllers\Controller;
 use App\Models\User;
+use Illuminate\Http\JsonResponse;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Hash;
@@ -16,19 +17,25 @@ class StaffController extends Controller
      * Gestion de l'équipe (Gestionnaire / Administrateur) — docs/SPEC.md §2.5. Seul le Super
      * Administrateur crée un compte Administrateur ; un Administrateur crée un Gestionnaire.
      */
-    public function index(Request $request): View
+    public function index(Request $request): View|JsonResponse
     {
         $this->authorize('viewAny', User::class);
 
-        return view('admin.staff.index', [
-            'staff' => User::whereIn('role', [Role::Gestionnaire, Role::Admin, Role::SuperAdmin])
-                ->when($request->filled('q'), function ($query) use ($request) {
-                    $term = '%'.$request->input('q').'%';
-                    $query->where(fn ($q) => $q->where('name', 'ilike', $term)->orWhere('email', 'ilike', $term));
-                })
-                ->orderByRaw("CASE role WHEN 'super_admin' THEN 0 WHEN 'admin' THEN 1 ELSE 2 END")
-                ->get(),
-        ]);
+        $staff = User::whereIn('role', [Role::Gestionnaire, Role::Admin, Role::SuperAdmin])
+            ->when($request->filled('q'), function ($query) use ($request) {
+                $term = '%'.$request->input('q').'%';
+                $query->where(fn ($q) => $q->where('name', 'ilike', $term)->orWhere('email', 'ilike', $term));
+            })
+            ->orderByRaw("CASE role WHEN 'super_admin' THEN 0 WHEN 'admin' THEN 1 ELSE 2 END")
+            ->get();
+
+        if ($request->ajax()) {
+            return response()->json([
+                'html' => view('admin.staff.partials.table', ['staff' => $staff])->render(),
+            ]);
+        }
+
+        return view('admin.staff.index', ['staff' => $staff]);
     }
 
     public function create(): View

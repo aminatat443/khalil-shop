@@ -6,6 +6,7 @@ use App\Http\Controllers\Controller;
 use App\Mail\ReturnStatusMail;
 use App\Models\ProductReturn;
 use App\Notifications\ReturnStatusNotification;
+use Illuminate\Http\JsonResponse;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Mail;
@@ -17,7 +18,7 @@ class ReturnController extends Controller
     /**
      * Traitement des demandes de retour (docs/SPEC.md §2.1).
      */
-    public function index(Request $request): View
+    public function index(Request $request): View|JsonResponse
     {
         $this->authorize('viewAny', ProductReturn::class);
 
@@ -33,6 +34,12 @@ class ReturnController extends Controller
             ->latest()
             ->paginate(20)
             ->withQueryString();
+
+        if ($request->ajax()) {
+            return response()->json([
+                'html' => view('admin.returns.partials.table', ['returns' => $returns])->render(),
+            ]);
+        }
 
         return view('admin.returns.index', ['returns' => $returns]);
     }

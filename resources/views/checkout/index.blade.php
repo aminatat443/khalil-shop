@@ -72,7 +72,7 @@
         },
     }"
 >
-    <h1 class="font-display text-4xl font-normal italic text-secondary-shade">Finaliser ma commande</h1>
+    <h1 class="font-display text-3xl font-normal italic text-secondary-shade sm:text-4xl">Finaliser ma commande</h1>
 
     {{-- Fil de progression (section 34 du cahier des charges) --}}
     <div class="mt-8 flex items-center">
@@ -146,7 +146,7 @@
                 type="button"
                 @click="detectLocation()"
                 :disabled="locating"
-                class="mt-4 inline-flex items-center gap-2 border border-secondary-shade/20 px-4 py-2.5 text-xs font-semibold uppercase tracking-[0.1em] text-secondary-shade transition hover:border-secondary-shade disabled:opacity-50"
+                class="mt-4 inline-flex items-center gap-2 border border-secondary-shade/20 px-4 py-2.5 text-[10px] font-semibold uppercase tracking-[0.06em] text-secondary-shade transition hover:border-secondary-shade disabled:opacity-50 lg:text-xs lg:tracking-[0.1em]"
             >
                 <i class="fa-solid" :class="locating ? 'fa-spinner fa-spin' : 'fa-location-crosshairs'"></i>
                 <span x-text="locating ? 'Localisation…' : 'Utiliser ma position actuelle'"></span>

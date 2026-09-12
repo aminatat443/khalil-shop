@@ -55,8 +55,8 @@ class HomeController extends Controller
             ->map(fn (Product $product) => [
                 // "pad" plutôt que "fill" : les photos produit sont presque toujours en portrait,
                 // un recadrage en paysage 1200x700 coupait le vêtement. On garde l'image entière,
-                // complétée par un fond blanc plutôt qu'un recadrage.
-                'image' => img_url($product->images->first()->url, 1200, 700, 'pad', 'ffffff'),
+                // complétée par la couleur dominante de la photo plutôt qu'un fond blanc imposé.
+                'image' => img_url($product->images->first()->url, 1200, 700, 'pad', 'auto'),
                 'name' => $product->name,
                 'price' => $product->price,
                 'url' => route('products.show', $product),
@@ -79,6 +79,7 @@ class HomeController extends Controller
     {
         return Product::where('is_active', true)
             ->with(['images' => fn ($q) => $q->orderBy('sort_order')])
-            ->withCount('variants');
+            ->withCount('variants')
+            ->withRatings();
     }
 }

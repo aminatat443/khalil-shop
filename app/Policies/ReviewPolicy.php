@@ -15,11 +15,15 @@ class ReviewPolicy
 
     public function update(User $user, Review $review): bool
     {
-        return $user->isGestionnaire();
+        if ($user->isGestionnaire()) {
+            return true;
+        }
+
+        return $user->id === $review->user_id && $review->created_at->addMinutes(30)->isFuture();
     }
 
     public function delete(User $user, Review $review): bool
     {
-        return $user->isGestionnaire();
+        return $user->isGestionnaire() || $user->id === $review->user_id;
     }
 }

@@ -46,7 +46,13 @@ class Setting extends Model
             return null;
         }
 
-        return \Illuminate\Support\Facades\Storage::disk(self::mediaDisk())->url($this->$field);
+        // Si le disque a changé (local → Cloudinary) depuis cet upload, le chemin enregistré
+        // n'existe plus dessus : on masque l'aperçu plutôt que de faire planter la page.
+        try {
+            return \Illuminate\Support\Facades\Storage::disk(self::mediaDisk())->url($this->$field);
+        } catch (\Throwable) {
+            return null;
+        }
     }
 
     /**

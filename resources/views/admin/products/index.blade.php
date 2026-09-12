@@ -4,93 +4,108 @@
 
 @section('content')
 
-<div class="flex flex-wrap items-center justify-between gap-4">
-    <h1 class="font-display text-3xl font-normal italic text-secondary-shade">Produits</h1>
-    @can('create', App\Models\Product::class)
-        <a href="{{ route('admin.products.create') }}" class="bg-secondary-shade px-6 py-3 text-xs font-semibold uppercase tracking-[0.15em] text-white transition hover:bg-primary">
-            Ajouter un produit
-        </a>
-    @endcan
-</div>
+<div
+    x-data="{ ...ajaxFilter(), promoModal: null }"
+>
+    <div class="flex flex-wrap items-center justify-between gap-4">
+        <h1 class="font-display text-3xl font-normal italic text-secondary-shade dark:text-white">Produits</h1>
+        @can('create', App\Models\Product::class)
+            <form action="{{ route('admin.products.create') }}" method="POST">
+                @csrf
+                <button type="submit" class="bg-secondary-shade px-6 py-3 text-xs font-semibold uppercase tracking-[0.15em] text-white shadow-sm transition hover:bg-primary hover:shadow-md">
+                    Ajouter un produit
+                </button>
+            </form>
+        @endcan
+    </div>
 
-<form method="GET" x-data class="mt-8 flex flex-wrap items-center gap-4">
-    <input type="text" name="q" value="{{ request('q') }}" placeholder="Rechercher un produit…" @input.debounce.500ms="$el.form.submit()" @if(request()->filled('q')) autofocus @endif class="w-64 border-b border-secondary-shade/20 bg-transparent py-2 text-sm outline-none focus:border-primary">
-    <select name="category_id" onchange="this.form.submit()" class="border-b border-secondary-shade/20 bg-transparent py-2 text-sm outline-none focus:border-primary">
-        <option value="">Toutes les catégories</option>
-        @foreach($categories as $category)
-            <option value="{{ $category->id }}" @selected(request('category_id') == $category->id)>{{ $category->name }}</option>
-        @endforeach
-    </select>
-    <button type="submit" class="text-xs font-semibold uppercase tracking-[0.1em] text-secondary-shade hover:text-primary">Filtrer</button>
-</form>
+    <form method="GET" @submit.prevent="submitForm($event)" class="mt-8 flex flex-wrap items-center gap-4">
+        <input type="text" name="q" value="{{ request('q') }}" placeholder="Rechercher un produit…" @input.debounce.500ms="$el.form.requestSubmit()" @if(request()->filled('q')) autofocus @endif class="w-64 border border-secondary-shade/15 bg-white px-3.5 py-2 text-sm outline-none focus:border-primary focus:ring-2 focus:ring-primary/15 dark:border-white/10 dark:bg-white/5 dark:text-white">
+        <select name="category_id" @change="$el.form.requestSubmit()" class="border border-secondary-shade/15 bg-white px-3.5 py-2 text-sm outline-none focus:border-primary focus:ring-2 focus:ring-primary/15 dark:border-white/10 dark:bg-white/5 dark:text-white">
+            <option value="">Toutes les catégories</option>
+            @foreach($categories as $category)
+                <option value="{{ $category->id }}" @selected(request('category_id') == $category->id)>{{ $category->name }}</option>
+            @endforeach
+        </select>
+        <noscript><button type="submit" class="text-xs font-semibold uppercase tracking-[0.1em] text-secondary-shade hover:text-primary dark:text-white/70">Filtrer</button></noscript>
+        <i x-show="loading" x-cloak class="fa-solid fa-circle-notch fa-spin text-secondary-shade/40 dark:text-white/30"></i>
+    </form>
 
-<div class="mt-6 overflow-x-auto bg-white">
-    <table class="w-full text-sm">
-        <thead>
-            <tr class="border-b border-secondary-shade/10 text-left text-xs uppercase tracking-[0.1em] text-grey">
-                <th class="px-6 py-4 font-medium">Produit</th>
-                <th class="px-6 py-4 font-medium">Catégorie</th>
-                <th class="px-6 py-4 font-medium">Prix</th>
-                <th class="px-6 py-4 font-medium">Stock</th>
-                <th class="px-6 py-4 font-medium">Statut</th>
-                <th class="px-6 py-4 font-medium">Vitrine</th>
-                <th class="px-6 py-4 font-medium"></th>
-            </tr>
-        </thead>
-        <tbody class="divide-y divide-secondary-shade/10">
-            @forelse($products as $product)
-                <tr onclick="window.location='{{ route('admin.products.edit', $product) }}'" class="cursor-pointer transition hover:bg-grey-tint/40">
-                    <td class="flex items-center gap-3 px-6 py-4">
-                        <div class="h-12 w-10 shrink-0 overflow-hidden bg-grey-tint">
-                            @if($image = $product->images->first()?->url)
-                                <img src="{{ img_url($image, 80, 96) }}" alt="" class="h-full w-full object-cover">
-                            @endif
+    <div x-ref="results" @click="onResultsClick($event)" :class="loading && 'opacity-50 pointer-events-none'" class="mt-6 transition-opacity">
+        @include('admin.products.partials.table')
+    </div>
+
+    {{-- Modale promotion --}}
+    <div
+        x-show="promoModal"
+        x-cloak
+        x-transition:enter="transition ease-out duration-200" x-transition:enter-start="opacity-0" x-transition:enter-end="opacity-100"
+        x-transition:leave="transition ease-in duration-150" x-transition:leave-start="opacity-100" x-transition:leave-end="opacity-0"
+        class="fixed inset-0 z-[80] flex items-center justify-center p-6"
+    >
+        <div @click="promoModal = null" class="absolute inset-0 bg-secondary-shade/50 backdrop-blur-[2px]"></div>
+
+        <div
+            x-show="promoModal"
+            x-transition:enter="transition ease-out duration-200" x-transition:enter-start="opacity-0 scale-95" x-transition:enter-end="opacity-100 scale-100"
+            class="relative w-full max-w-sm bg-white p-8 shadow-2xl ring-1 ring-black/5 dark:bg-[#16201f] dark:ring-white/10"
+        >
+            <button type="button" @click="promoModal = null" class="absolute right-5 top-5 text-secondary-shade/50 transition hover:text-primary dark:text-white/40" aria-label="Fermer">
+                <i class="fa-solid fa-xmark text-lg"></i>
+            </button>
+
+            <h2 class="font-display text-2xl italic text-secondary-shade dark:text-white" x-text="promoModal?.name"></h2>
+            <p class="mt-1 text-xs text-grey dark:text-white/40">
+                Prix actuel : <span x-text="promoModal && new Intl.NumberFormat('fr-FR').format(promoModal.price) + ' FCFA'"></span>
+            </p>
+
+            <template x-if="promoModal">
+                <form :action="`/admin/products/${promoModal.id}/promo`" method="POST" class="mt-6 space-y-5">
+                    @csrf
+                    <div class="flex gap-2">
+                        <button type="button" @click="promoModal.mode = 'percentage'" :class="promoModal.mode === 'percentage' ? 'bg-secondary-shade text-white' : 'border border-secondary-shade/20 text-secondary-shade dark:border-white/20 dark:text-white/70'" class="flex-1 py-2.5 text-xs font-semibold uppercase tracking-[0.1em] transition">
+                            % Réduction
+                        </button>
+                        <button type="button" @click="promoModal.mode = 'price'" :class="promoModal.mode === 'price' ? 'bg-secondary-shade text-white' : 'border border-secondary-shade/20 text-secondary-shade dark:border-white/20 dark:text-white/70'" class="flex-1 py-2.5 text-xs font-semibold uppercase tracking-[0.1em] transition">
+                            Prix promo
+                        </button>
+                    </div>
+
+                    <input type="hidden" name="mode" :value="promoModal.mode">
+
+                    <div x-show="promoModal.mode === 'percentage'">
+                        <label class="mb-1.5 block text-xs font-semibold uppercase tracking-[0.15em] text-secondary-shade dark:text-white/70">Pourcentage de réduction</label>
+                        <div class="flex items-center gap-2">
+                            <input type="number" name="percentage" x-model.number="promoModal.percentage" min="1" max="90" class="w-full border border-secondary-shade/15 bg-white px-3.5 py-2 text-sm outline-none focus:border-primary focus:ring-2 focus:ring-primary/15 dark:border-white/10 dark:bg-white/5 dark:text-white">
+                            <span class="text-sm text-grey dark:text-white/40">%</span>
                         </div>
-                        <span class="font-medium text-secondary-shade">{{ $product->name }}</span>
-                    </td>
-                    <td class="px-6 py-4 text-grey">{{ $product->category->name ?? '—' }}</td>
-                    <td class="px-6 py-4 text-secondary-shade">{{ number_format($product->price, 0, ',', ' ') }} FCFA</td>
-                    <td class="px-6 py-4 text-secondary-shade">
-                        {{ $product->variants_count > 0 ? $product->variants_count.' variante(s)' : $product->stock }}
-                    </td>
-                    <td class="px-6 py-4">
-                        <span class="text-xs {{ $product->is_active ? 'text-primary' : 'text-grey' }}">{{ $product->is_active ? 'Actif' : 'Désactivé' }}</span>
-                    </td>
-                    <td class="px-6 py-4" onclick="event.stopPropagation()">
-                        <div class="flex items-center gap-3">
-                            <form action="{{ route('admin.products.toggle', [$product, 'is_featured']) }}" method="POST">
-                                @csrf
-                                <button type="submit" title="{{ $product->is_featured ? 'Retirer du slider du hero' : 'Mettre dans le slider du hero' }}" class="text-sm {{ $product->is_featured ? 'text-primary' : 'text-grey/40 hover:text-secondary-shade' }}">
-                                    <i class="fa-solid fa-images"></i>
-                                </button>
-                            </form>
-                            <form action="{{ route('admin.products.toggle', [$product, 'is_new']) }}" method="POST">
-                                @csrf
-                                <button type="submit" title="{{ $product->is_new ? 'Retirer des nouveautés' : 'Mettre dans les nouveautés' }}" class="text-sm {{ $product->is_new ? 'text-primary' : 'text-grey/40 hover:text-secondary-shade' }}">
-                                    <i class="fa-solid fa-sparkles"></i>
-                                </button>
-                            </form>
-                            <form action="{{ route('admin.products.toggle', [$product, 'is_promo']) }}" method="POST">
-                                @csrf
-                                <button type="submit" title="{{ $product->is_promo ? 'Retirer des promotions' : 'Mettre en promotion' }}" class="text-sm {{ $product->is_promo ? 'text-primary' : 'text-grey/40 hover:text-secondary-shade' }}">
-                                    <i class="fa-solid fa-tag"></i>
-                                </button>
-                            </form>
-                        </div>
-                    </td>
-                    <td class="px-6 py-4 text-right" onclick="event.stopPropagation()">
-                        <a href="{{ route('admin.products.edit', $product) }}" class="text-xs text-secondary-shade hover:text-primary">Modifier</a>
-                    </td>
-                </tr>
-            @empty
-                <tr>
-                    <td colspan="7" class="px-6 py-10 text-center text-grey">Aucun produit ne correspond à ces critères.</td>
-                </tr>
-            @endforelse
-        </tbody>
-    </table>
-</div>
+                        <p class="mt-2 text-xs text-grey dark:text-white/40">
+                            Nouveau prix : <span x-text="promoModal && new Intl.NumberFormat('fr-FR').format(Math.round((promoModal.oldPrice && promoModal.isPromo ? promoModal.oldPrice : promoModal.price) * (1 - (promoModal.percentage || 0) / 100))) + ' FCFA'"></span>
+                        </p>
+                    </div>
 
-<div class="mt-6">{{ $products->links() }}</div>
+                    <div x-show="promoModal.mode === 'price'">
+                        <label class="mb-1.5 block text-xs font-semibold uppercase tracking-[0.15em] text-secondary-shade dark:text-white/70">Nouveau prix (FCFA)</label>
+                        <input type="number" name="promo_price" x-model.number="promoModal.promoPrice" min="0" class="w-full border border-secondary-shade/15 bg-white px-3.5 py-2 text-sm outline-none focus:border-primary focus:ring-2 focus:ring-primary/15 dark:border-white/10 dark:bg-white/5 dark:text-white">
+                    </div>
+
+                    <button type="submit" class="w-full bg-secondary-shade py-3.5 text-xs font-semibold uppercase tracking-[0.15em] text-white transition hover:bg-primary">
+                        Appliquer la promotion
+                    </button>
+                </form>
+            </template>
+
+            <template x-if="promoModal?.isPromo">
+                <form :action="`/admin/products/${promoModal.id}/promo`" method="POST" class="mt-3">
+                    @csrf
+                    <input type="hidden" name="remove" value="1">
+                    <button type="submit" class="w-full border border-red-200 py-3 text-xs font-semibold uppercase tracking-[0.1em] text-red-600 transition hover:bg-red-50 dark:border-red-500/30 dark:text-red-400 dark:hover:bg-red-500/10">
+                        Retirer la promotion
+                    </button>
+                </form>
+            </template>
+        </div>
+    </div>
+</div>
 
 @endsection

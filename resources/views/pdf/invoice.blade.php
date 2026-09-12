@@ -64,7 +64,7 @@
             <span class="badge {{ $order->payment_status === 'paid' ? 'paid' : 'pending' }}">
                 {{ $order->payment_status === 'paid' ? 'Payé' : 'En attente' }}
             </span>
-            <p>Moyen de paiement : {{ $order->payment_method === 'cod' ? 'À la livraison' : $order->payment_method }}</p>
+            <p>Moyen de paiement : {{ $order->paymentMethodLabel() }}</p>
             <p>Date de la facture : {{ $order->created_at->format('d/m/Y') }}</p>
         </div>
     </div>
@@ -81,8 +81,12 @@
             <td class="client">
                 <h3>Adressé à</h3>
                 <p class="name">{{ $order->customer_name }}</p>
-                <p>{{ $order->delivery_address }}{{ $order->delivery_quartier ? ', '.$order->delivery_quartier : '' }}</p>
-                <p>{{ $order->delivery_city }}, {{ $order->delivery_region }}</p>
+                @if($order->is_in_store)
+                    <p>Retrait en boutique</p>
+                @else
+                    <p>{{ $order->delivery_address }}{{ $order->delivery_quartier ? ', '.$order->delivery_quartier : '' }}</p>
+                    <p>{{ $order->delivery_city }}, {{ $order->delivery_region }}</p>
+                @endif
                 <p>Tél. : {{ $order->customer_phone }}</p>
                 <p>Email : {{ $order->customer_email }}</p>
             </td>

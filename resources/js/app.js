@@ -11,6 +11,33 @@ function csrfToken() {
 }
 window.csrfToken = csrfToken;
 
+// Bascules "mise en avant" (slider hero / nouveauté) sur les listes produit admin — un simple
+// clic sans rechargement de page, cohérent avec le reste du back-office. La classe active/inactive
+// du bouton est mise à jour localement à partir de l'état renvoyé par le serveur.
+const PRODUCT_FLAG_ACTIVE_CLASSES = ['bg-primary-tint', 'text-primary', 'dark:bg-primary/15'];
+const PRODUCT_FLAG_INACTIVE_CLASSES = ['text-grey/40', 'hover:bg-grey-tint', 'hover:text-secondary-shade', 'dark:text-white/30', 'dark:hover:bg-white/10', 'dark:hover:text-white'];
+
+window.toggleProductFlag = async function (event, url) {
+    event.preventDefault();
+    event.stopPropagation();
+    const button = event.currentTarget;
+
+    try {
+        const response = await fetch(url, {
+            method: 'POST',
+            headers: { Accept: 'application/json', 'X-Requested-With': 'XMLHttpRequest', 'X-XSRF-TOKEN': csrfToken() },
+        });
+        if (! response.ok) return;
+
+        const data = await response.json();
+        const flag = Object.keys(data).find((key) => key !== 'status');
+        const active = data[flag];
+
+        button.classList.remove(...PRODUCT_FLAG_ACTIVE_CLASSES, ...PRODUCT_FLAG_INACTIVE_CLASSES);
+        button.classList.add(...(active ? PRODUCT_FLAG_ACTIVE_CLASSES : PRODUCT_FLAG_INACTIVE_CLASSES));
+    } catch (e) {}
+};
+
 document.addEventListener('alpine:init', () => {
     // Panier — état source de vérité côté serveur, hydraté au chargement puis mis à jour par
     // fetch (pas de rechargement de page à l'ajout, cohérent avec la section 33 du cahier des charges).
@@ -39,7 +66,6 @@ document.addEventListener('alpine:init', () => {
             }
 
             this.hydrate(await response.json());
-            this.open = true;
 
             return true;
         },
@@ -111,6 +137,38 @@ document.addEventListener('alpine:init', () => {
             this.persist();
         },
     });
+
+    // Filtrage/recherche en temps réel sans rechargement de page — utilisé par les listes du
+    // back-office (produits, commandes, retours…) : le formulaire de recherche/filtre et la
+    // pagination passent tous par fetch(), avec repli sur une navigation classique en cas d'échec.
+    Alpine.data('ajaxFilter', () => ({
+        loading: false,
+        async apply(url) {
+            this.loading = true;
+            try {
+                const response = await fetch(url, { headers: { 'X-Requested-With': 'XMLHttpRequest', Accept: 'application/json' } });
+                if (! response.ok) throw new Error('request failed');
+                const data = await response.json();
+                this.$refs.results.innerHTML = data.html;
+                window.history.pushState({}, '', url);
+            } catch (e) {
+                window.location = url;
+            } finally {
+                this.loading = false;
+            }
+        },
+        submitForm(e) {
+            const form = e.target;
+            const params = new URLSearchParams(new FormData(form));
+            this.apply(form.action.split('?')[0] + '?' + params.toString());
+        },
+        onResultsClick(e) {
+            const link = e.target.closest('[data-pagination] a');
+            if (! link) return;
+            e.preventDefault();
+            this.apply(link.href);
+        },
+    }));
 });
 
 window.Alpine = Alpine;

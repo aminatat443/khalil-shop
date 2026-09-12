@@ -12,12 +12,13 @@ class SearchController extends Controller
     /**
      * Recherche produit (section 10) + points d'entrée "Nouveautés"/"Promotions" du header (section 9).
      */
-    public function index(Request $request): View
+    public function index(Request $request): View|JsonResponse
     {
         $query = Product::query()
             ->where('is_active', true)
             ->with(['images' => fn ($q) => $q->orderBy('sort_order')])
-            ->withCount('variants');
+            ->withCount('variants')
+            ->withRatings();
 
         if ($request->filled('q')) {
             $query->where('name', 'ilike', '%'.$request->input('q').'%');
@@ -31,11 +32,34 @@ class SearchController extends Controller
             $query->where('is_promo', true);
         }
 
-        $products = $query->latest()->paginate(20)->withQueryString();
+        if ($request->filled('prix_min')) {
+            $query->where('price', '>=', (int) $request->input('prix_min'));
+        }
+
+        if ($request->filled('prix_max')) {
+            $query->where('price', '<=', (int) $request->input('prix_max'));
+        }
+
+        match ($request->input('tri')) {
+            'prix_croissant' => $query->orderBy('price'),
+            'prix_decroissant' => $query->orderByDesc('price'),
+            default => $query->latest(),
+        };
+
+        $products = $query->paginate(20)->withQueryString();
+
+        if ($request->ajax()) {
+            return response()->json([
+                'html' => view('products.partials.search-results', ['products' => $products])->render(),
+                'count' => $products->total(),
+            ]);
+        }
 
         return view('products.search', [
             'products' => $products,
             'query' => $request->input('q'),
+            'priceFloor' => 0,
+            'priceCeil' => 500000,
         ]);
     }
 

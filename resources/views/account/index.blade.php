@@ -81,7 +81,7 @@
                 }"
             >
                 @csrf
-                <div class="grid grid-cols-2 gap-6">
+                <div class="grid grid-cols-1 gap-6 sm:grid-cols-2">
                     <div>
                         <label class="mb-1.5 block text-xs font-semibold uppercase tracking-[0.15em] text-secondary-shade">Nom complet</label>
                         <input type="text" name="full_name" value="{{ old('full_name', $defaultAddress->full_name ?? $user->name) }}" required class="w-full border-b border-secondary-shade/20 bg-transparent py-2 text-sm text-secondary-shade outline-none focus:border-primary">
@@ -97,7 +97,7 @@
                         type="button"
                         @click="detectLocation()"
                         :disabled="locating"
-                        class="inline-flex items-center gap-2 border border-secondary-shade/20 px-4 py-2.5 text-xs font-semibold uppercase tracking-[0.1em] text-secondary-shade transition hover:border-secondary-shade disabled:opacity-50"
+                        class="inline-flex items-center gap-2 border border-secondary-shade/20 px-4 py-2.5 text-[10px] font-semibold uppercase tracking-[0.06em] text-secondary-shade transition hover:border-secondary-shade disabled:opacity-50 lg:text-xs lg:tracking-[0.1em]"
                     >
                         <i class="fa-solid" :class="locating ? 'fa-spinner fa-spin' : 'fa-location-crosshairs'"></i>
                         <span x-text="locating ? 'Localisation…' : 'Utiliser ma position actuelle'"></span>
@@ -107,7 +107,7 @@
                     </template>
                 </div>
 
-                <div class="grid grid-cols-2 gap-6">
+                <div class="grid grid-cols-1 gap-6 sm:grid-cols-2">
                     <div>
                         <label class="mb-1.5 block text-xs font-semibold uppercase tracking-[0.15em] text-secondary-shade">Région</label>
                         <input x-ref="regionInput" type="text" name="region" value="{{ old('region', $defaultAddress->region ?? '') }}" required class="w-full border-b border-secondary-shade/20 bg-transparent py-2 text-sm text-secondary-shade outline-none focus:border-primary">
@@ -126,7 +126,7 @@
                     <textarea name="instructions" rows="2" class="w-full border-b border-secondary-shade/20 bg-transparent py-2 text-sm text-secondary-shade outline-none focus:border-primary">{{ old('instructions', $defaultAddress->instructions ?? '') }}</textarea>
                 </div>
 
-                <button type="submit" class="bg-secondary-shade px-8 py-4 text-xs font-semibold uppercase tracking-[0.15em] text-white transition hover:bg-primary">
+                <button type="submit" class="w-full bg-secondary-shade px-8 py-4 text-xs font-semibold uppercase tracking-[0.15em] text-white transition hover:bg-primary sm:w-auto">
                     Enregistrer mon adresse
                 </button>
             </form>
@@ -146,16 +146,16 @@
 
         <div class="mt-4 space-y-3">
             @forelse($recentOrders as $order)
-                <a href="{{ route('account.orders.show', $order) }}" class="flex items-center justify-between gap-4 border border-secondary-shade/10 bg-white p-5 text-sm shadow-sm transition hover:border-primary/40 hover:shadow-md">
-                    <div>
+                <a href="{{ route('account.orders.show', $order) }}" class="flex flex-col gap-3 border border-secondary-shade/10 bg-white p-4 text-sm shadow-sm transition hover:border-primary/40 hover:shadow-md sm:flex-row sm:items-center sm:justify-between sm:gap-4 sm:p-5">
+                    <div class="min-w-0">
                         <span class="font-medium text-secondary-shade">{{ $order->order_number }}</span>
-                        <span class="ml-2 text-xs text-grey">{{ $order->created_at->format('d/m/Y') }} · {{ $order->items_count }} article(s)</span>
+                        <span class="block text-xs text-grey sm:ml-2 sm:inline">{{ $order->created_at->format('d/m/Y') }} · {{ $order->items_count }} article(s)</span>
                     </div>
-                    <div class="flex items-center gap-4">
+                    <div class="flex items-center justify-between gap-3 sm:justify-end sm:gap-4">
                         @php($returnInfo = $order->returnStatusInfo())
                         <x-status-pill :tone="$returnInfo['tone'] ?? (\App\Models\Order::STATUS_TONES[$order->status] ?? 'neutral')" :label="$returnInfo['label'] ?? (\App\Models\Order::STATUS_LABELS[$order->status] ?? $order->status)" />
-                        <span class="text-xs font-medium text-secondary-shade">{{ number_format($order->total, 0, ',', ' ') }} FCFA</span>
-                        <i class="fa-solid fa-chevron-right text-[10px] text-grey/50"></i>
+                        <span class="whitespace-nowrap text-xs font-medium text-secondary-shade">{{ number_format($order->total, 0, ',', ' ') }} FCFA</span>
+                        <i class="hidden shrink-0 fa-solid fa-chevron-right text-[10px] text-grey/50 sm:block"></i>
                     </div>
                 </a>
             @empty

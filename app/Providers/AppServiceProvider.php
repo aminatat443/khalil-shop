@@ -4,6 +4,8 @@ namespace App\Providers;
 
 use App\Models\Category;
 use App\Services\CartService;
+use Illuminate\Auth\Events\Login;
+use Illuminate\Support\Facades\Event;
 use Illuminate\Support\Facades\View;
 use Illuminate\Support\ServiceProvider;
 
@@ -22,6 +24,13 @@ class AppServiceProvider extends ServiceProvider
      */
     public function boot(): void
     {
+        // Horodatage de connexion (back-office "Utilisateurs") — couvre les trois parcours de
+        // connexion (email/mot de passe, Google, lien de vérification) sans dupliquer la logique
+        // dans chaque contrôleur, puisque Laravel déclenche cet événement dans les trois cas.
+        Event::listen(Login::class, function (Login $event) {
+            $event->user->update(['last_login_at' => now()]);
+        });
+
         // Le header (mega menu + compteur panier) a besoin de ces données sur toutes les pages
         // publiques — on les injecte via un composer plutôt que de les répéter dans chaque contrôleur.
         View::composer(['components.header', 'components.footer'], function ($view) {

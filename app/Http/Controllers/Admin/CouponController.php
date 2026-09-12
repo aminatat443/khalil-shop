@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
 use App\Models\Coupon;
+use Illuminate\Http\JsonResponse;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\View\View;
@@ -13,7 +14,7 @@ class CouponController extends Controller
     /**
      * Codes promotionnels (section 47 du cahier des charges).
      */
-    public function index(Request $request): View
+    public function index(Request $request): View|JsonResponse
     {
         $this->authorize('viewAny', Coupon::class);
 
@@ -22,6 +23,12 @@ class CouponController extends Controller
             ->latest()
             ->paginate(20)
             ->withQueryString();
+
+        if ($request->ajax()) {
+            return response()->json([
+                'html' => view('admin.coupons.partials.table', ['coupons' => $coupons])->render(),
+            ]);
+        }
 
         return view('admin.coupons.index', ['coupons' => $coupons]);
     }

@@ -84,6 +84,76 @@ class OrderService
     }
 
     /**
+     * Enregistre une vente conclue directement en boutique : le client repart avec l'article
+     * en main, payé en espèces, donc la commande est immédiatement confirmée (le stock est
+     * décrémenté tout de suite, pas d'étape d'attente comme pour une commande en ligne).
+     *
+     * @param  array<int, array{product_id: int, variant_id: ?int, quantity: int}>  $items
+     */
+    public function createInStore(array $customer, array $items): Order
+    {
+        if (empty($items)) {
+            throw new RuntimeException('Ajoutez au moins un article.');
+        }
+
+        return DB::transaction(function () use ($customer, $items) {
+            $lines = [];
+            $subtotal = 0;
+
+            foreach ($items as $line) {
+                $product = Product::findOrFail($line['product_id']);
+                $variant = ($line['variant_id'] ?? null) ? ProductVariant::findOrFail($line['variant_id']) : null;
+                $quantity = max(1, (int) $line['quantity']);
+                $unitPrice = $this->promotions->effectivePrice($product, $variant);
+
+                $lines[] = [
+                    'product' => $product,
+                    'variant' => $variant,
+                    'quantity' => $quantity,
+                    'unit_price' => $unitPrice,
+                    'subtotal' => $unitPrice * $quantity,
+                ];
+
+                $subtotal += $unitPrice * $quantity;
+            }
+
+            $order = Order::create([
+                'order_number' => $this->generateOrderNumber(),
+                'user_id' => $customer['user_id'] ?? null,
+                'customer_name' => $customer['name'],
+                'customer_phone' => $customer['phone'],
+                'customer_email' => $customer['email'] ?: 'boutique@khalilshop.sn',
+                'delivery_region' => 'Retrait en boutique',
+                'delivery_city' => 'Retrait en boutique',
+                'delivery_address' => 'Vente en magasin — pas de livraison',
+                'subtotal' => $subtotal,
+                'delivery_fee' => 0,
+                'discount' => 0,
+                'total' => $subtotal,
+                'payment_method' => 'especes',
+                'payment_status' => 'paid',
+                'is_in_store' => true,
+                'status' => 'recue',
+            ]);
+
+            foreach ($lines as $line) {
+                $order->items()->create([
+                    'product_id' => $line['product']->id,
+                    'product_variant_id' => $line['variant']?->id,
+                    'product_name' => $line['product']->name,
+                    'variant_label' => $this->variantLabel($line['variant']),
+                    'sku' => $line['variant']?->sku,
+                    'unit_price' => $line['unit_price'],
+                    'quantity' => $line['quantity'],
+                    'subtotal' => $line['subtotal'],
+                ]);
+            }
+
+            return $order;
+        });
+    }
+
+    /**
      * Confirme la commande : décrément atomique du stock (docs/SPEC.md §2.3). Appelé automatiquement
      * après un paiement en ligne réussi, ou manuellement par un Gestionnaire/Administrateur pour le
      * paiement à la livraison (§2.4). Si une rupture de stock est détectée à cet instant précis (cas

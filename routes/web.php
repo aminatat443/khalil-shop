@@ -4,16 +4,21 @@ use App\Http\Controllers\Admin\BannerController as AdminBannerController;
 use App\Http\Controllers\Admin\CategoryController as AdminCategoryController;
 use App\Http\Controllers\Admin\CouponController as AdminCouponController;
 use App\Http\Controllers\Admin\DashboardController as AdminDashboardController;
+use App\Http\Controllers\Admin\FinanceController as AdminFinanceController;
+use App\Http\Controllers\Admin\InvoiceController as AdminInvoiceController;
 use App\Http\Controllers\Admin\OrderController as AdminOrderController;
 use App\Http\Controllers\Admin\ProductController as AdminProductController;
 use App\Http\Controllers\Admin\ProductImageController as AdminProductImageController;
+use App\Http\Controllers\Admin\ColorController as AdminColorController;
 use App\Http\Controllers\Admin\ProductVariantController as AdminProductVariantController;
 use App\Http\Controllers\Admin\PromotionController as AdminPromotionController;
 use App\Http\Controllers\Admin\ReturnController as AdminReturnController;
 use App\Http\Controllers\Admin\ReviewController as AdminReviewController;
 use App\Http\Controllers\Admin\CampaignController as AdminCampaignController;
+use App\Http\Controllers\Admin\SecurityController as AdminSecurityController;
 use App\Http\Controllers\Admin\SettingController as AdminSettingController;
 use App\Http\Controllers\Admin\StaffController as AdminStaffController;
+use App\Http\Controllers\Admin\UserController as AdminUserController;
 use App\Http\Controllers\AccountController;
 use App\Http\Controllers\AssistantController;
 use App\Http\Controllers\NotificationController;
@@ -76,16 +81,23 @@ Route::get('/commandes/{order}/facture', [InvoiceController::class, 'show'])->na
 
 Route::get('/produit/{product:slug}', [ProductController::class, 'show'])->name('products.show');
 Route::post('/produit/{product}/avis', [ReviewController::class, 'store'])->middleware('auth')->name('products.reviews.store');
+Route::delete('/produit/{product}/avis', [ReviewController::class, 'destroy'])->middleware('auth')->name('products.reviews.destroy');
 
 // Back-office (sections 40 à 49 du cahier des charges) — réservé Gestionnaire/Admin/Super Admin
 Route::prefix('admin')->name('admin.')->middleware(['auth', 'staff'])->group(function () {
     Route::get('/', [AdminDashboardController::class, 'index'])->name('dashboard');
 
-    Route::resource('products', AdminProductController::class)->except('show');
+    Route::resource('products', AdminProductController::class)->except(['show', 'create']);
+    // "Créer" démarre immédiatement un brouillon en base (voir ProductController::create) —
+    // une action d'écriture n'a pas sa place derrière une requête GET.
+    Route::post('products/create', [AdminProductController::class, 'create'])->name('products.create');
     Route::post('products/{product}/toggle/{flag}', [AdminProductController::class, 'toggleFlag'])->name('products.toggle');
+    Route::post('products/{product}/promo', [AdminProductController::class, 'setPromo'])->name('products.promo');
     Route::post('products/{product}/images', [AdminProductImageController::class, 'store'])->name('products.images.store');
     Route::post('products/{product}/images/{image}/primary', [AdminProductImageController::class, 'primary'])->name('products.images.primary');
+    Route::post('products/{product}/images/reorder', [AdminProductImageController::class, 'reorder'])->name('products.images.reorder');
     Route::delete('products/{product}/images/{image}', [AdminProductImageController::class, 'destroy'])->name('products.images.destroy');
+    Route::post('colors', [AdminColorController::class, 'store'])->name('colors.store');
     Route::post('products/{product}/variants', [AdminProductVariantController::class, 'store'])->name('products.variants.store');
     Route::put('products/{product}/variants/{variant}', [AdminProductVariantController::class, 'update'])->name('products.variants.update');
     Route::delete('products/{product}/variants/{variant}', [AdminProductVariantController::class, 'destroy'])->name('products.variants.destroy');
@@ -93,6 +105,9 @@ Route::prefix('admin')->name('admin.')->middleware(['auth', 'staff'])->group(fun
     Route::resource('categories', AdminCategoryController::class)->except('show');
 
     Route::get('orders', [AdminOrderController::class, 'index'])->name('orders.index');
+    Route::get('orders/nouvelle', [AdminOrderController::class, 'create'])->name('orders.create');
+    Route::get('orders/clients', [AdminOrderController::class, 'searchClients'])->name('orders.clients.search');
+    Route::post('orders', [AdminOrderController::class, 'store'])->name('orders.store');
     Route::get('orders/{order}', [AdminOrderController::class, 'show'])->name('orders.show');
     Route::post('orders/{order}/confirmer', [AdminOrderController::class, 'confirm'])->name('orders.confirm');
     Route::post('orders/{order}/annuler', [AdminOrderController::class, 'cancel'])->name('orders.cancel');
@@ -114,12 +129,24 @@ Route::prefix('admin')->name('admin.')->middleware(['auth', 'staff'])->group(fun
     Route::post('staff', [AdminStaffController::class, 'store'])->name('staff.store');
     Route::delete('staff/{user}', [AdminStaffController::class, 'destroy'])->name('staff.destroy');
 
+    Route::get('utilisateurs', [AdminUserController::class, 'index'])->name('users.index');
+    Route::get('utilisateurs/creer', [AdminUserController::class, 'create'])->name('users.create');
+    Route::post('utilisateurs', [AdminUserController::class, 'store'])->name('users.store');
+
+    Route::get('finances', [AdminFinanceController::class, 'index'])->name('finances.index');
+
+    Route::get('factures', [AdminInvoiceController::class, 'index'])->name('invoices.index');
+
     Route::get('configuration', [AdminSettingController::class, 'edit'])->name('settings.edit');
     Route::post('configuration', [AdminSettingController::class, 'update'])->name('settings.update');
 
     Route::get('campagnes', [AdminCampaignController::class, 'index'])->name('campaigns.index');
     Route::get('campagnes/nouvelle', [AdminCampaignController::class, 'create'])->name('campaigns.create');
     Route::post('campagnes', [AdminCampaignController::class, 'store'])->name('campaigns.store');
+
+    Route::get('securite', [AdminSecurityController::class, 'index'])->name('security.index');
+    Route::post('securite/bloquer', [AdminSecurityController::class, 'block'])->name('security.block');
+    Route::delete('securite/{blockedIp}', [AdminSecurityController::class, 'unblock'])->name('security.unblock');
 });
 
 // Route catalogue en dernier : {category:slug} matcherait sinon les segments ci-dessus

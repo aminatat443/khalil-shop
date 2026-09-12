@@ -7,7 +7,7 @@
 
     <div class="text-center">
         <i class="fa-solid fa-circle-check text-3xl text-primary"></i>
-        <h1 class="mt-6 font-display text-4xl font-normal italic text-secondary-shade">Merci {{ $order->customer_name }} !</h1>
+        <h1 class="mt-6 font-display text-3xl font-normal italic text-secondary-shade sm:text-4xl">Merci {{ $order->customer_name }} !</h1>
         <p class="mt-3 text-sm text-grey">
             Votre commande <span class="font-medium text-secondary-shade">{{ $order->order_number }}</span> a bien été reçue.
         </p>

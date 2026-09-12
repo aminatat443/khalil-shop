@@ -5,11 +5,11 @@
 @section('content')
 
 <div class="border-b border-secondary-shade/10">
-    <nav class="mx-auto max-w-[1600px] px-6 py-5 text-xs uppercase tracking-[0.1em] text-grey sm:px-10">
+    <nav class="mx-auto max-w-[1600px] overflow-x-auto whitespace-nowrap px-6 py-5 text-[10px] uppercase tracking-[0.06em] text-grey sm:px-10 lg:text-xs lg:tracking-[0.1em]">
         <a href="{{ route('home') }}" class="hover:text-primary">Accueil</a>
-        <span class="mx-2">/</span>
+        <span class="mx-1.5 lg:mx-2">/</span>
         <a href="{{ route('catalog.show', $product->category) }}" class="hover:text-primary">{{ $product->category->name }}</a>
-        <span class="mx-2">/</span>
+        <span class="mx-1.5 lg:mx-2">/</span>
         <span class="text-secondary-shade">{{ $product->name }}</span>
     </nav>
 </div>
@@ -18,7 +18,7 @@
 
     @php
         $galleryImages = $product->images->map(fn ($img) => [
-            'main' => img_url($img->url, 800, 560, 'pad', 'ffffff'),
+            'main' => img_url($img->url, 800, 560, 'pad', 'auto'),
             'thumb' => img_url($img->url, 160, 160),
             'alt' => $img->alt ?? $product->name,
         ]);
@@ -32,8 +32,15 @@
             get selectedVariant() {
                 return this.variants.find(v => v.color_id === this.colorId && v.size_id === this.sizeId) ?? null;
             },
-            get canAddToCart() {
-                return {{ $colors->isEmpty() && $sizes->isEmpty() ? 'true' : 'false' }} || (this.selectedVariant && this.selectedVariant.stock > 0);
+            get availableSizeIds() {
+                if (! this.colorId) return null;
+                return this.variants.filter(v => v.color_id === this.colorId).map(v => v.size_id);
+            },
+            selectColor(id) {
+                this.colorId = id;
+                if (this.availableSizeIds && ! this.availableSizeIds.includes(this.sizeId)) {
+                    this.sizeId = null;
+                }
             },
             images: {{ $galleryImages->toJson() }},
             active: 0,
@@ -61,7 +68,7 @@
                         <button
                             type="button"
                             @click.stop="prev()"
-                            class="absolute left-3 top-1/2 z-10 flex h-9 w-9 -translate-y-1/2 items-center justify-center bg-white/90 text-secondary-shade opacity-0 shadow transition hover:text-primary group-hover:opacity-100"
+                            class="absolute left-3 top-1/2 z-10 flex h-9 w-9 -translate-y-1/2 items-center justify-center bg-white/90 text-secondary-shade opacity-100 shadow transition hover:text-primary lg:opacity-0 lg:group-hover:opacity-100"
                             aria-label="Image précédente"
                         >
                             <i class="fa-solid fa-chevron-left text-xs"></i>
@@ -69,7 +76,7 @@
                         <button
                             type="button"
                             @click.stop="next()"
-                            class="absolute right-3 top-1/2 z-10 flex h-9 w-9 -translate-y-1/2 items-center justify-center bg-white/90 text-secondary-shade opacity-0 shadow transition hover:text-primary group-hover:opacity-100"
+                            class="absolute right-3 top-1/2 z-10 flex h-9 w-9 -translate-y-1/2 items-center justify-center bg-white/90 text-secondary-shade opacity-100 shadow transition hover:text-primary lg:opacity-0 lg:group-hover:opacity-100"
                             aria-label="Image suivante"
                         >
                             <i class="fa-solid fa-chevron-right text-xs"></i>
@@ -130,7 +137,7 @@
                 </p>
             @endif
 
-            <h1 class="font-display text-4xl font-normal italic text-secondary-shade">{{ $product->name }}</h1>
+            <h1 class="font-display text-3xl font-normal italic text-secondary-shade sm:text-4xl">{{ $product->name }}</h1>
 
             <div class="mt-5 flex items-baseline gap-3">
                 <p class="text-xl font-medium text-secondary-shade">{{ number_format($effectivePrice, 0, ',', ' ') }} FCFA</p>
@@ -155,7 +162,7 @@
                             @foreach($colors as $color)
                                 <button
                                     type="button"
-                                    @click="colorId = {{ $color->id }}"
+                                    @click="selectColor({{ $color->id }})"
                                     :class="colorId === {{ $color->id }} ? 'ring-1 ring-offset-2 ring-secondary-shade' : 'ring-1 ring-secondary-shade/15'"
                                     class="h-9 w-9 rounded-full transition"
                                     style="background-color: {{ $color->hex_code ?? '#ccc' }}"
@@ -166,14 +173,18 @@
                     </div>
                 @endif
 
-                {{-- Tailles avec désactivation intelligente (section 28) --}}
+                {{-- Tailles avec désactivation intelligente (section 28) — filtrées selon la couleur choisie --}}
                 @if($sizes->isNotEmpty())
                     <div>
                         <p class="mb-3 text-xs font-semibold uppercase tracking-[0.2em] text-grey">Taille</p>
+                        @if($colors->isNotEmpty())
+                            <p x-show="! colorId" class="mb-3 text-xs text-grey/70">Choisissez une couleur pour voir les tailles disponibles.</p>
+                        @endif
                         <div class="flex flex-wrap gap-2">
                             @foreach($sizes as $size)
                                 <button
                                     type="button"
+                                    x-show="! availableSizeIds || availableSizeIds.includes({{ $size->id }})"
                                     @click="sizeId = {{ $size->id }}"
                                     :class="sizeId === {{ $size->id }} ? 'border-secondary-shade text-secondary-shade' : 'border-secondary-shade/15 text-secondary-shade hover:border-secondary-shade/40'"
                                     class="border px-4 py-2 text-sm transition"
@@ -185,7 +196,7 @@
                     </div>
                 @endif
 
-                <input type="hidden" name="variant_id" x-model="selectedVariant ? selectedVariant.id : ''">
+                <input type="hidden" name="variant_id" :value="selectedVariant ? selectedVariant.id : ''">
 
                 <template x-if="selectedVariant && selectedVariant.stock <= 0">
                     <p class="text-sm font-medium text-primary-shade">Rupture de stock pour cette variante.</p>
@@ -193,12 +204,9 @@
 
                 <button
                     type="submit"
-                    :disabled="!canAddToCart"
-                    :class="canAddToCart ? 'bg-secondary-shade hover:bg-primary text-white' : 'cursor-not-allowed bg-grey-tint text-grey/60'"
-                    class="w-full py-4 text-xs font-semibold uppercase tracking-[0.15em] transition"
+                    class="w-full bg-secondary-shade py-4 text-xs font-semibold uppercase tracking-[0.15em] text-white transition hover:bg-primary"
                 >
-                    <span x-show="canAddToCart">Ajouter au panier</span>
-                    <span x-show="!canAddToCart">{{ $inStock ? 'Sélectionnez une variante' : 'Rupture de stock' }}</span>
+                    Ajouter au panier
                 </button>
             </form>
 
@@ -223,83 +231,177 @@
         </div>
     </div>
 
-    {{-- Avis clients (section 39 du cahier des charges) --}}
-    <div class="mt-20 max-w-2xl border-t border-secondary-shade/10 pt-12">
-        <div class="flex flex-wrap items-center gap-4">
-            <h2 class="text-xs font-semibold uppercase tracking-[0.2em] text-secondary-shade">Avis clients</h2>
-            @if($averageRating)
-                <span class="flex items-center gap-1.5 text-sm text-secondary-shade">
-                    <span class="flex gap-0.5">
-                        @for($i = 1; $i <= 5; $i++)
-                            <i class="fa-solid fa-star text-[11px] {{ $i <= round($averageRating) ? 'text-primary' : 'text-grey-tint' }}"></i>
-                        @endfor
-                    </span>
-                    {{ $averageRating }} / 5 ({{ $reviews->count() }})
+</div>
+
+{{-- Avis clients (section 39 du cahier des charges) --}}
+<section class="border-t border-secondary-shade/10">
+    <div class="mx-auto max-w-[1600px] px-6 py-16 sm:px-10">
+        <p class="text-xs font-medium uppercase tracking-[0.35em] text-grey">Retours clients</p>
+        <div class="mt-3 flex flex-wrap items-end justify-between gap-4">
+            <h2 class="font-display text-3xl font-normal italic text-secondary-shade sm:text-4xl">Avis clients</h2>
+            @php
+                $displayRating = $product->displayRating($averageRating);
+                $displayReviewsCount = $product->displayReviewsCount($reviews->count());
+            @endphp
+            <div class="flex items-center gap-2.5 pb-1">
+                <span class="flex gap-0.5">
+                    @for($i = 1; $i <= 5; $i++)
+                        <i class="fa-solid fa-star text-[13px] {{ $i <= round($displayRating) ? 'text-primary' : 'text-secondary-shade/15' }}"></i>
+                    @endfor
                 </span>
-            @endif
+                <span class="text-sm font-semibold text-secondary-shade">{{ $displayRating }}</span>
+                <span class="text-sm text-grey">({{ $displayReviewsCount }} avis)</span>
+            </div>
         </div>
 
-        <div class="mt-6 divide-y divide-secondary-shade/10">
-            @forelse($reviews as $review)
-                <div class="py-5">
-                    <div class="flex items-center justify-between">
-                        <p class="text-sm font-medium text-secondary-shade">{{ $review->user->name }}</p>
-                        <div class="flex gap-0.5">
-                            @for($i = 1; $i <= 5; $i++)
-                                <i class="fa-solid fa-star text-[10px] {{ $i <= $review->rating ? 'text-primary' : 'text-grey-tint' }}"></i>
-                            @endfor
+        <div class="mt-10 grid gap-10 lg:grid-cols-[1fr_360px]">
+
+            <div class="lg:order-2 lg:sticky lg:top-24 lg:self-start">
+                @auth
+                    @if($myReview && ! $canEditReview)
+                        <div class="border border-secondary-shade/10 p-6 sm:p-8">
+                            <div class="flex items-center justify-between gap-3">
+                                <p class="font-display text-xl italic text-secondary-shade">Votre avis</p>
+                                <div class="flex gap-0.5">
+                                    @for($i = 1; $i <= 5; $i++)
+                                        <i class="fa-solid fa-star text-[13px] {{ $i <= $myReview->rating ? 'text-primary' : 'text-secondary-shade/15' }}"></i>
+                                    @endfor
+                                </div>
+                            </div>
+                            @if($myReview->comment)
+                                <p class="mt-3 text-sm leading-relaxed text-grey">{{ $myReview->comment }}</p>
+                            @endif
+                            <p class="mt-4 text-xs text-grey">Le délai de 30 minutes pour modifier votre avis est dépassé, mais vous pouvez toujours le supprimer.</p>
+
+                            <form action="{{ route('products.reviews.destroy', $product) }}" method="POST" class="mt-4" onsubmit="return confirm('Supprimer votre avis ?');">
+                                @csrf
+                                @method('DELETE')
+                                <button type="submit" class="w-full border border-primary/30 py-3 text-xs font-semibold uppercase tracking-[0.15em] text-primary transition hover:bg-primary hover:text-white">
+                                    Supprimer mon avis
+                                </button>
+                            </form>
+
+                            @if(! $myReview->is_approved)
+                                <p class="mt-3 text-xs text-grey">Votre avis est en attente de modération.</p>
+                            @endif
+                        </div>
+                    @else
+                    <div
+                        x-data="{
+                            rating: {{ $myReview->rating ?? 0 }},
+                            hover: 0,
+                            needsRating: false,
+                            labels: ['', 'Décevant', 'Moyen', 'Bien', 'Très bien', 'Excellent'],
+                        }"
+                        class="border border-secondary-shade/10 p-6 sm:p-8"
+                    >
+                        <p class="font-display text-xl italic text-secondary-shade">
+                            {{ $myReview ? 'Modifier mon avis' : 'Laisser un avis' }}
+                        </p>
+                        <p class="mt-1 text-xs text-grey">
+                            @if($myReview)
+                                Modifiable encore {{ $myReview->created_at->addMinutes(30)->diffForHumans(null, true) }}.
+                            @else
+                                Votre expérience compte — dites-nous ce que vous en pensez.
+                            @endif
+                        </p>
+
+                        <form
+                            action="{{ route('products.reviews.store', $product) }}"
+                            method="POST"
+                            class="mt-6 space-y-5"
+                            @submit="if (rating === 0) { $event.preventDefault(); needsRating = true; }"
+                        >
+                            @csrf
+                            <div>
+                                <div class="flex justify-center gap-1">
+                                    <template x-for="i in 5" :key="i">
+                                        <button
+                                            type="button"
+                                            @click="rating = i; needsRating = false"
+                                            @mouseenter="hover = i"
+                                            @mouseleave="hover = 0"
+                                            class="flex h-12 w-12 items-center justify-center text-4xl transition-transform hover:scale-110"
+                                            :class="i <= (hover || rating) ? 'text-primary' : 'text-secondary-shade/15'"
+                                        >
+                                            <i class="fa-solid fa-star"></i>
+                                        </button>
+                                    </template>
+                                </div>
+                                <p class="mt-2 text-center text-xs font-medium uppercase tracking-[0.1em] text-grey" x-text="labels[hover || rating] || 'Sélectionnez une note'"></p>
+                            </div>
+                            <p x-show="needsRating" x-cloak class="text-center text-xs font-medium text-primary">Choisissez une note avant d'envoyer.</p>
+                            <input type="hidden" name="rating" x-model="rating">
+                            <textarea name="comment" rows="3" placeholder="Votre commentaire (optionnel)" class="w-full border border-secondary-shade/15 bg-white px-4 py-3 text-sm text-secondary-shade outline-none focus:border-secondary-shade">{{ old('comment', $myReview->comment ?? '') }}</textarea>
+                            <button type="submit" class="w-full bg-secondary-shade py-3.5 text-xs font-semibold uppercase tracking-[0.15em] text-white transition hover:bg-primary">
+                                {{ $myReview ? 'Mettre à jour mon avis' : 'Envoyer mon avis' }}
+                            </button>
+                        </form>
+
+                        @if($myReview)
+                            <form action="{{ route('products.reviews.destroy', $product) }}" method="POST" class="mt-3" onsubmit="return confirm('Supprimer votre avis ?');">
+                                @csrf
+                                @method('DELETE')
+                                <button type="submit" class="w-full py-2 text-xs font-medium text-grey underline decoration-grey/40 underline-offset-2 transition hover:text-primary">
+                                    Supprimer mon avis
+                                </button>
+                            </form>
+                        @endif
+
+                        @if($myReview && ! $myReview->is_approved)
+                            <p class="mt-3 text-xs text-grey">Votre avis est en attente de modération.</p>
+                        @endif
+                    </div>
+                    @endif
+                @else
+                    <div class="border border-secondary-shade/10 p-6 sm:p-8">
+                        <i class="fa-solid fa-star text-xl text-primary"></i>
+                        <p class="mt-3 font-display text-xl italic text-secondary-shade">Envie de partager votre avis ?</p>
+                        <p class="mt-1 text-sm text-grey">
+                            <button type="button" @click="$store.ui.openLogin()" class="font-semibold text-secondary-shade hover:text-primary">Connectez-vous</button>
+                            pour laisser un avis sur ce produit.
+                        </p>
+                    </div>
+                @endauth
+            </div>
+
+            <div class="lg:order-1 space-y-4">
+                @forelse($reviews as $review)
+                    <div class="flex gap-4 border border-secondary-shade/10 bg-grey-tint/30 p-5">
+                        <span class="flex h-9 w-9 shrink-0 items-center justify-center bg-secondary-shade text-[11px] font-semibold uppercase text-white">
+                            {{ \Illuminate\Support\Str::of($review->user->name)->explode(' ')->map(fn($p) => mb_substr($p, 0, 1))->take(2)->join('') }}
+                        </span>
+                        <div class="min-w-0 flex-1">
+                            <div class="flex items-center justify-between gap-3">
+                                <p class="text-sm font-medium text-secondary-shade">{{ $review->user->name }}</p>
+                                <div class="flex shrink-0 gap-0.5">
+                                    @for($i = 1; $i <= 5; $i++)
+                                        <i class="fa-solid fa-star text-[10px] {{ $i <= $review->rating ? 'text-primary' : 'text-grey-tint' }}"></i>
+                                    @endfor
+                                </div>
+                            </div>
+                            @if($review->comment)
+                                <p class="mt-1.5 text-sm leading-relaxed text-grey">{{ $review->comment }}</p>
+                            @endif
                         </div>
                     </div>
-                    @if($review->comment)
-                        <p class="mt-2 text-sm text-grey">{{ $review->comment }}</p>
-                    @endif
-                </div>
-            @empty
-                <p class="py-5 text-sm text-grey">Aucun avis pour le moment. Soyez le premier à donner votre avis.</p>
-            @endforelse
-        </div>
-
-        @auth
-            <div x-data="{ rating: {{ $myReview->rating ?? 0 }} }" class="mt-8 border-t border-secondary-shade/10 pt-8">
-                <p class="text-xs font-semibold uppercase tracking-[0.15em] text-secondary-shade">
-                    {{ $myReview ? 'Modifier mon avis' : 'Laisser un avis' }}
-                </p>
-
-                <form action="{{ route('products.reviews.store', $product) }}" method="POST" class="mt-4 space-y-4">
-                    @csrf
-                    <div class="flex gap-1">
-                        <template x-for="i in 5" :key="i">
-                            <button type="button" @click="rating = i" class="text-lg transition" :class="i <= rating ? 'text-primary' : 'text-grey-tint'">
-                                <i class="fa-solid fa-star"></i>
-                            </button>
-                        </template>
+                @empty
+                    <div class="border border-secondary-shade/10 bg-grey-tint/30 py-14 text-center">
+                        <i class="fa-regular fa-comment-dots mb-3 text-2xl text-secondary-shade/20"></i>
+                        <p class="text-sm text-grey">Aucun avis pour le moment. Soyez le premier à donner votre avis.</p>
                     </div>
-                    <input type="hidden" name="rating" x-model="rating">
-                    <textarea name="comment" rows="3" placeholder="Votre commentaire (optionnel)" class="w-full border-b border-secondary-shade/20 bg-transparent py-2 text-sm text-secondary-shade outline-none focus:border-primary">{{ old('comment', $myReview->comment ?? '') }}</textarea>
-                    <button type="submit" :disabled="rating === 0" class="bg-secondary-shade px-6 py-3 text-xs font-semibold uppercase tracking-[0.15em] text-white transition hover:bg-primary disabled:cursor-not-allowed disabled:opacity-40">
-                        Envoyer mon avis
-                    </button>
-                </form>
-
-                @if($myReview && ! $myReview->is_approved)
-                    <p class="mt-3 text-xs text-grey">Votre avis est en attente de modération.</p>
-                @endif
+                @endforelse
             </div>
-        @else
-            <p class="mt-8 border-t border-secondary-shade/10 pt-8 text-sm text-grey">
-                <button type="button" @click="$store.ui.openLogin()" class="font-medium text-secondary-shade hover:text-primary">Connectez-vous</button>
-                pour laisser un avis.
-            </p>
-        @endauth
-    </div>
 
-</div>
+        </div>
+    </div>
+</section>
 
 @if($relatedProducts->isNotEmpty())
     <section class="border-t border-secondary-shade/10">
         <div class="mx-auto max-w-[1600px] px-6 py-16 sm:px-10">
             <p class="text-xs font-medium uppercase tracking-[0.35em] text-grey">Vous pourriez aimer</p>
-            <h2 class="mt-3 font-display text-3xl font-normal italic text-secondary-shade">Cela pourrait vous intéresser</h2>
+            <h2 class="mt-3 font-display text-2xl font-normal italic text-secondary-shade sm:text-3xl">Cela pourrait vous intéresser</h2>
 
             <div class="mt-10">
                 <x-horizontal-scroller>

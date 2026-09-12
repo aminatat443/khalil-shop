@@ -2,12 +2,17 @@
 
 namespace App\Http\Middleware;
 
+use App\Services\SecurityMonitor;
 use Closure;
 use Illuminate\Http\Request;
 use Symfony\Component\HttpFoundation\Response;
 
 class EnsureUserIsStaff
 {
+    public function __construct(private readonly SecurityMonitor $security)
+    {
+    }
+
     /**
      * Réserve le back-office aux rôles Gestionnaire / Administrateur / Super Administrateur
      * (docs/SPEC.md §2.5). Le Client n'a jamais accès à /admin.
@@ -15,6 +20,8 @@ class EnsureUserIsStaff
     public function handle(Request $request, Closure $next): Response
     {
         if (! $request->user() || ! $request->user()->isGestionnaire()) {
+            $this->security->recordUnauthorizedAccess($request, "Tentative d'accès au back-office ({$request->path()})");
+
             abort(403, "Accès réservé à l'équipe KhalilShop.");
         }
 

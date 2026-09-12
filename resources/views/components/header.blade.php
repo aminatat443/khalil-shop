@@ -1,5 +1,5 @@
 <header
-    x-data="{ scrolled: false, searchOpen: false, favoritesOpen: false }"
+    x-data="{ scrolled: false, searchOpen: false, favoritesOpen: false, mobileMenuOpen: false }"
     x-init="
         $store.cart.hydrate({{ Illuminate\Support\Js::from($cartSummary ?? ['items' => [], 'count' => 0, 'subtotal' => 0]) }});
         @if(request()->boolean('login')) $store.ui.openLogin(); @endif
@@ -9,7 +9,7 @@
 >
 
     {{-- Topbar --}}
-    <div class="border-b border-secondary-shade/10 py-1.5 text-center text-[11px] font-medium uppercase tracking-[0.2em] text-grey">
+    <div class="border-b border-secondary-shade/10 px-4 py-1.5 text-center text-[9px] font-medium uppercase tracking-[0.08em] text-grey sm:text-[11px] sm:tracking-[0.2em]">
         Livraison partout au Sénégal — Nouvelle collection disponible
     </div>
 
@@ -21,16 +21,22 @@
         :class="scrolled ? 'h-16 border-secondary-shade/10 shadow-[0_1px_0_0_rgba(33,55,55,0.06)]' : 'h-20 border-transparent'"
         class="relative border-b bg-white transition-[height] duration-300"
     >
-        <div class="mx-auto flex h-full max-w-[1600px] items-center gap-10 px-6 sm:px-10">
+        <div class="mx-auto grid h-full max-w-[1600px] grid-cols-[auto_1fr_auto] items-center gap-4 px-6 sm:px-10 xl:flex xl:gap-10">
 
-            {{-- Logo --}}
-            <a href="{{ route('home') }}" class="shrink-0">
+            {{-- Bouton menu mobile --}}
+            <button type="button" @click="mobileMenuOpen = true" class="text-secondary-shade transition hover:text-primary xl:hidden" aria-label="Menu">
+                <i class="fa-solid fa-bars text-[19px]"></i>
+            </button>
+
+            {{-- Logo : centré dans l'espace disponible entre le menu et les actions sur mobile/tablette
+                 (grille, jamais de chevauchement possible), aligné à gauche dans le flux normal à partir de xl --}}
+            <a href="{{ route('home') }}" class="col-start-2 shrink-0 justify-self-center xl:justify-self-auto">
                 <img src="{{ asset('images/Khalil_shop-cropped.svg') }}" alt="KhalilShop" class="h-10 w-auto sm:h-12">
             </a>
 
 
             {{-- Navigation catégories --}}
-            <nav class="hidden h-full flex-1 items-center justify-center gap-10 md:flex">
+            <nav class="hidden h-full flex-1 items-center justify-center gap-8 xl:flex">
                 @foreach($navCategories ?? [] as $universe)
                     <div class="relative flex h-full items-center" @mouseenter="open = {{ $universe->id }}">
                         <a
@@ -82,20 +88,33 @@
                         @endif
                     </div>
                 @endforeach
+
+                <a
+                    href="{{ route('search', ['promotions' => 1]) }}"
+                    class="text-[13px] font-semibold uppercase tracking-[0.12em] text-primary transition hover:text-primary-shade"
+                >
+                    Promo
+                </a>
             </nav>
 
 
             {{-- Actions --}}
-            <div class="ml-auto flex shrink-0 items-center gap-6">
+            <div class="ml-auto flex shrink-0 items-center gap-6" @mouseenter="open = null">
 
                 <button type="button" @click="searchOpen = !searchOpen; open = null" class="text-secondary-shade transition hover:text-primary" aria-label="Rechercher">
                     <i class="fa-solid fa-fw text-[17px]" :class="searchOpen ? 'fa-xmark' : 'fa-magnifying-glass'"></i>
                 </button>
 
+                @guest
+                    <button type="button" @click="$store.ui.openLogin()" class="text-secondary-shade transition hover:text-primary xl:hidden" aria-label="Se connecter">
+                        <i class="fa-regular fa-user text-[17px]"></i>
+                    </button>
+                @endguest
+
                 @auth
                     <x-notification-bell />
 
-                    <div class="relative hidden md:block" x-data="{ accountOpen: false }" @mouseenter="accountOpen = true" @mouseleave="accountOpen = false" @click.outside="accountOpen = false">
+                    <div class="relative hidden xl:block" x-data="{ accountOpen: false }" @mouseenter="accountOpen = true" @mouseleave="accountOpen = false" @click.outside="accountOpen = false">
                         <button type="button" class="flex items-center gap-1.5 text-secondary-shade transition hover:text-primary" aria-label="Compte">
                             <i class="fa-solid fa-user text-[17px]"></i>
                             <i class="fa-solid fa-chevron-down text-[9px] transition-transform duration-200" :class="accountOpen ? 'rotate-180' : ''"></i>
@@ -145,7 +164,7 @@
                         </div>
                     </div>
                 @else
-                    <button type="button" @click="$store.ui.openLogin()" class="hidden items-center gap-2 text-secondary-shade transition hover:text-primary md:inline-flex" aria-label="Se connecter">
+                    <button type="button" @click="$store.ui.openLogin()" class="hidden items-center gap-2 text-secondary-shade transition hover:text-primary xl:inline-flex" aria-label="Se connecter">
                         <i class="fa-regular fa-user text-[17px]"></i>
                         <span class="text-[13px] font-medium">Se connecter</span>
                     </button>
@@ -257,6 +276,123 @@
     </div>
 
 
+    {{-- Menu mobile (drawer gauche) : catégories, promo et compte — équivalent mobile de la nav desktop --}}
+    <div x-show="mobileMenuOpen" x-cloak class="fixed inset-0 z-[65] xl:hidden">
+        <div
+            x-show="mobileMenuOpen"
+            x-transition:enter="transition ease-out duration-300" x-transition:enter-start="opacity-0" x-transition:enter-end="opacity-100"
+            x-transition:leave="transition ease-in duration-200" x-transition:leave-start="opacity-100" x-transition:leave-end="opacity-0"
+            @click="mobileMenuOpen = false"
+            class="absolute inset-0 bg-secondary-shade/30"
+        ></div>
+
+        <div
+            x-show="mobileMenuOpen"
+            x-transition:enter="transition ease-out duration-300" x-transition:enter-start="-translate-x-full" x-transition:enter-end="translate-x-0"
+            x-transition:leave="transition ease-in duration-250" x-transition:leave-start="translate-x-0" x-transition:leave-end="-translate-x-full"
+            x-data="{ openCat: null }"
+            class="absolute left-0 top-0 flex h-full w-full max-w-xs flex-col overflow-y-auto bg-white"
+        >
+            <div class="flex items-center justify-between border-b border-secondary-shade/10 px-6 py-5">
+                <img src="{{ asset('images/Khalil_shop-cropped.svg') }}" alt="KhalilShop" class="h-9 w-auto">
+                <button type="button" @click="mobileMenuOpen = false" class="text-secondary-shade transition hover:text-primary" aria-label="Fermer">
+                    <i class="fa-solid fa-xmark text-lg"></i>
+                </button>
+            </div>
+
+            <nav class="flex-1 px-2 py-3">
+                @foreach($navCategories ?? [] as $universe)
+                    <div class="border-b border-secondary-shade/10">
+                        <div class="flex items-center justify-between">
+                            <a
+                                href="{{ route('catalog.show', $universe) }}"
+                                @click="mobileMenuOpen = false"
+                                class="block flex-1 px-4 py-3.5 text-sm font-medium uppercase tracking-[0.1em] text-secondary-shade transition hover:text-primary"
+                            >
+                                {{ $universe->name }}
+                            </a>
+                            @if($universe->children->isNotEmpty())
+                                <button
+                                    type="button"
+                                    @click="openCat = openCat === {{ $universe->id }} ? null : {{ $universe->id }}"
+                                    class="px-4 py-3.5 text-secondary-shade"
+                                    aria-label="Sous-catégories {{ $universe->name }}"
+                                >
+                                    <i class="fa-solid fa-chevron-down text-[11px] transition-transform duration-200" :class="openCat === {{ $universe->id }} ? 'rotate-180' : ''"></i>
+                                </button>
+                            @endif
+                        </div>
+
+                        @if($universe->children->isNotEmpty())
+                            <div
+                                x-show="openCat === {{ $universe->id }}"
+                                x-transition:enter="transition ease-out duration-150"
+                                x-transition:enter-start="opacity-0"
+                                x-transition:enter-end="opacity-100"
+                                x-cloak
+                                class="bg-grey-tint/50 pb-2"
+                            >
+                                @foreach($universe->children as $child)
+                                    <a
+                                        href="{{ route('catalog.show', $child) }}"
+                                        @click="mobileMenuOpen = false"
+                                        class="block px-8 py-2.5 text-sm text-grey transition hover:text-primary"
+                                    >
+                                        {{ $child->name }}
+                                    </a>
+                                @endforeach
+                            </div>
+                        @endif
+                    </div>
+                @endforeach
+
+                <a
+                    href="{{ route('search', ['promotions' => 1]) }}"
+                    @click="mobileMenuOpen = false"
+                    class="block border-b border-secondary-shade/10 px-4 py-3.5 text-sm font-semibold uppercase tracking-[0.1em] text-primary transition hover:text-primary-shade"
+                >
+                    Promo
+                </a>
+            </nav>
+
+            <div class="border-t border-secondary-shade/10 px-4 py-5">
+                @auth
+                    <p class="px-2 pb-3 text-xs text-grey">Connecté en tant que <span class="font-medium text-secondary-shade">{{ auth()->user()->name }}</span></p>
+
+                    <a href="{{ route('account.index') }}" @click="mobileMenuOpen = false" class="block px-2 py-2.5 text-sm text-secondary-shade transition hover:text-primary">
+                        <i class="fa-solid fa-user mr-2 w-4 text-center"></i>Mon profil
+                    </a>
+
+                    @unless(auth()->user()->isGestionnaire())
+                        <a href="{{ route('account.orders') }}" @click="mobileMenuOpen = false" class="block px-2 py-2.5 text-sm text-secondary-shade transition hover:text-primary">
+                            <i class="fa-solid fa-box mr-2 w-4 text-center"></i>Mes commandes
+                        </a>
+                        <a href="{{ route('account.returns') }}" @click="mobileMenuOpen = false" class="block px-2 py-2.5 text-sm text-secondary-shade transition hover:text-primary">
+                            <i class="fa-solid fa-rotate-left mr-2 w-4 text-center"></i>Mes retours
+                        </a>
+                    @else
+                        <a href="{{ route('admin.dashboard') }}" @click="mobileMenuOpen = false" class="block px-2 py-2.5 text-sm text-secondary-shade transition hover:text-primary">
+                            <i class="fa-solid fa-gauge mr-2 w-4 text-center"></i>Back-office
+                        </a>
+                    @endunless
+
+                    <form action="{{ route('logout') }}" method="POST" class="mt-2 border-t border-secondary-shade/10 pt-2">
+                        @csrf
+                        <button type="submit" class="block w-full px-2 py-2.5 text-left text-sm text-secondary-shade transition hover:text-primary">
+                            <i class="fa-solid fa-arrow-right-from-bracket mr-2 w-4 text-center"></i>Se déconnecter
+                        </button>
+                    </form>
+                @else
+                    <button type="button" @click="mobileMenuOpen = false; $store.ui.openLogin()" class="flex w-full items-center justify-center gap-2 bg-secondary-shade px-6 py-3.5 text-xs font-semibold uppercase tracking-[0.15em] text-white transition hover:bg-primary">
+                        <i class="fa-regular fa-user"></i>
+                        Se connecter
+                    </button>
+                @endauth
+            </div>
+        </div>
+    </div>
+
+
     {{-- Panier flottant (drawer, section 33 du cahier des charges) — état réactif, mis à jour sans rechargement --}}
     <div x-show="$store.cart.open" x-cloak class="fixed inset-0 z-[60]">
         <div
@@ -271,16 +407,16 @@
             x-show="$store.cart.open"
             x-transition:enter="transition ease-out duration-300" x-transition:enter-start="translate-x-full" x-transition:enter-end="translate-x-0"
             x-transition:leave="transition ease-in duration-250" x-transition:leave-start="translate-x-0" x-transition:leave-end="translate-x-full"
-            class="absolute right-0 top-0 flex h-full w-full max-w-md flex-col bg-white"
+            class="absolute inset-y-[5%] right-0 flex w-[90%] max-w-md flex-col overflow-hidden bg-white shadow-2xl lg:inset-y-0 lg:right-0 lg:w-full lg:shadow-none"
         >
-            <div class="flex items-center justify-between border-b border-secondary-shade/10 px-8 py-6">
-                <h2 class="font-display text-2xl italic text-secondary-shade">Mon panier</h2>
+            <div class="flex items-center justify-between border-b border-secondary-shade/10 px-5 py-5 sm:px-8 sm:py-6">
+                <h2 class="font-display text-xl italic text-secondary-shade sm:text-2xl">Mon panier</h2>
                 <button type="button" @click="$store.cart.open = false" class="text-secondary-shade transition hover:text-primary" aria-label="Fermer">
                     <i class="fa-solid fa-xmark text-lg"></i>
                 </button>
             </div>
 
-            <div class="flex-1 overflow-y-auto px-8">
+            <div class="flex-1 overflow-y-auto px-5 sm:px-8">
                 <template x-if="$store.cart.items.length === 0">
                     <div class="flex h-full flex-col items-center justify-center py-24 text-center">
                         <i class="fa-solid fa-bag-shopping mb-4 text-2xl text-secondary-shade/20"></i>
@@ -289,23 +425,23 @@
                 </template>
 
                 <template x-for="item in $store.cart.items" :key="item.product_id + ':' + item.variant_id">
-                    <div class="border-b border-secondary-shade/10 py-5">
-                        <div class="flex items-center gap-4">
-                            <a :href="item.url" class="h-24 w-20 shrink-0 overflow-hidden bg-grey-tint">
+                    <div class="border-b border-secondary-shade/10 py-4 sm:py-5">
+                        <div class="flex items-center gap-3 sm:gap-4">
+                            <a :href="item.url" class="h-20 w-16 shrink-0 overflow-hidden bg-grey-tint sm:h-24 sm:w-20">
                                 <img :src="item.image" :alt="item.name" class="h-full w-full object-cover">
                             </a>
-                            <div class="flex-1">
-                                <a :href="item.url" class="text-sm font-medium text-secondary-shade hover:text-primary" x-text="item.name"></a>
+                            <div class="min-w-0 flex-1">
+                                <a :href="item.url" class="text-xs font-medium text-secondary-shade hover:text-primary sm:text-sm" x-text="item.name"></a>
                                 <template x-if="item.variant_label">
-                                    <p class="mt-1 text-xs text-grey" x-text="item.variant_label"></p>
+                                    <p class="mt-1 text-[11px] text-grey sm:text-xs" x-text="item.variant_label"></p>
                                 </template>
-                                <p class="mt-1 text-xs text-grey" x-text="'Qté : ' + item.quantity"></p>
+                                <p class="mt-1 text-[11px] text-grey sm:text-xs" x-text="'Qté : ' + item.quantity"></p>
                             </div>
-                            <div class="flex flex-col items-end gap-2">
+                            <div class="flex shrink-0 flex-col items-end gap-2">
                                 <button type="button" @click="$store.cart.remove(item.product_id, item.variant_id)" class="text-secondary-shade/40 transition hover:text-primary" aria-label="Retirer du panier">
                                     <i class="fa-solid fa-xmark"></i>
                                 </button>
-                                <p class="text-sm font-medium text-secondary-shade" x-text="new Intl.NumberFormat('fr-FR').format(item.subtotal) + ' FCFA'"></p>
+                                <p class="whitespace-nowrap text-xs font-medium text-secondary-shade sm:text-sm" x-text="new Intl.NumberFormat('fr-FR').format(item.subtotal) + ' FCFA'"></p>
                             </div>
                         </div>
 
@@ -366,10 +502,10 @@
             </div>
 
             <template x-if="$store.cart.items.length > 0">
-                <div class="border-t border-secondary-shade/10 px-8 py-6">
-                    <div class="mb-5 flex items-center justify-between">
-                        <span class="text-sm font-medium uppercase tracking-[0.1em] text-secondary-shade">Sous-total</span>
-                        <span class="font-display text-xl italic text-secondary-shade" x-text="new Intl.NumberFormat('fr-FR').format($store.cart.subtotal) + ' FCFA'"></span>
+                <div class="border-t border-secondary-shade/10 px-5 py-5 sm:px-8 sm:py-6">
+                    <div class="mb-5 flex items-center justify-between gap-3">
+                        <span class="text-xs font-medium uppercase tracking-[0.1em] text-secondary-shade sm:text-sm">Sous-total</span>
+                        <span class="whitespace-nowrap font-display text-lg italic text-secondary-shade sm:text-xl" x-text="new Intl.NumberFormat('fr-FR').format($store.cart.subtotal) + ' FCFA'"></span>
                     </div>
                     <a
                         href="{{ route('checkout.index') }}"
@@ -401,16 +537,16 @@
             x-show="favoritesOpen"
             x-transition:enter="transition ease-out duration-300" x-transition:enter-start="translate-x-full" x-transition:enter-end="translate-x-0"
             x-transition:leave="transition ease-in duration-250" x-transition:leave-start="translate-x-0" x-transition:leave-end="translate-x-full"
-            class="absolute right-0 top-0 flex h-full w-full max-w-md flex-col bg-white"
+            class="absolute inset-y-[5%] right-0 flex w-[90%] max-w-md flex-col overflow-hidden bg-white shadow-2xl lg:inset-y-0 lg:right-0 lg:w-full lg:shadow-none"
         >
-            <div class="flex items-center justify-between border-b border-secondary-shade/10 px-8 py-6">
-                <h2 class="font-display text-2xl italic text-secondary-shade">Mes favoris</h2>
+            <div class="flex items-center justify-between border-b border-secondary-shade/10 px-5 py-5 sm:px-8 sm:py-6">
+                <h2 class="font-display text-xl italic text-secondary-shade sm:text-2xl">Mes favoris</h2>
                 <button type="button" @click="favoritesOpen = false" class="text-secondary-shade transition hover:text-primary" aria-label="Fermer">
                     <i class="fa-solid fa-xmark text-lg"></i>
                 </button>
             </div>
 
-            <div class="flex-1 overflow-y-auto px-8">
+            <div class="flex-1 overflow-y-auto px-5 sm:px-8">
                 <template x-if="$store.favorites.items.length === 0">
                     <div class="flex h-full flex-col items-center justify-center py-24 text-center">
                         <i class="fa-regular fa-heart mb-4 text-2xl text-secondary-shade/20"></i>
@@ -419,15 +555,15 @@
                 </template>
 
                 <template x-for="item in $store.favorites.items" :key="item.id">
-                    <div class="flex items-center gap-4 border-b border-secondary-shade/10 py-5">
-                        <a :href="item.url" class="h-24 w-20 shrink-0 overflow-hidden bg-grey-tint">
+                    <div class="flex items-center gap-3 border-b border-secondary-shade/10 py-4 sm:gap-4 sm:py-5">
+                        <a :href="item.url" class="h-20 w-16 shrink-0 overflow-hidden bg-grey-tint sm:h-24 sm:w-20">
                             <img :src="item.image" :alt="item.name" class="h-full w-full object-cover">
                         </a>
-                        <div class="flex-1">
-                            <a :href="item.url" class="text-sm font-medium text-secondary-shade hover:text-primary" x-text="item.name"></a>
-                            <p class="mt-1 text-xs text-grey" x-text="new Intl.NumberFormat('fr-FR').format(item.price) + ' FCFA'"></p>
+                        <div class="min-w-0 flex-1">
+                            <a :href="item.url" class="text-xs font-medium text-secondary-shade hover:text-primary sm:text-sm" x-text="item.name"></a>
+                            <p class="mt-1 whitespace-nowrap text-[11px] text-grey sm:text-xs" x-text="new Intl.NumberFormat('fr-FR').format(item.price) + ' FCFA'"></p>
                         </div>
-                        <button type="button" @click="$store.favorites.remove(item.id)" class="text-secondary-shade/40 transition hover:text-primary" aria-label="Retirer des favoris">
+                        <button type="button" @click="$store.favorites.remove(item.id)" class="shrink-0 text-secondary-shade/40 transition hover:text-primary" aria-label="Retirer des favoris">
                             <i class="fa-solid fa-xmark"></i>
                         </button>
                     </div>
@@ -482,7 +618,7 @@
             {{-- Connexion --}}
             <template x-if="$store.ui.authMode === 'login'">
                 <div>
-                    <h2 class="font-display text-3xl italic text-secondary-shade">Connexion</h2>
+                    <h2 class="font-display text-2xl italic text-secondary-shade sm:text-3xl">Connexion</h2>
                     <p class="mt-2 text-sm text-grey">Accédez à votre compte KhalilShop.</p>
 
                     <a
@@ -526,7 +662,9 @@
                                         loading = false;
                                         return;
                                     }
-                                    window.location.reload();
+                                    const redirectUrl = new URL(window.location.href);
+                                    redirectUrl.searchParams.delete('login');
+                                    window.location.href = redirectUrl.toString();
                                 })
                                 .catch(() => { error = 'Une erreur est survenue. Réessayez.'; loading = false; })
                         "
@@ -572,7 +710,7 @@
             {{-- Inscription --}}
             <template x-if="$store.ui.authMode === 'register'">
                 <div>
-                    <h2 class="font-display text-3xl italic text-secondary-shade">Créer un compte</h2>
+                    <h2 class="font-display text-2xl italic text-secondary-shade sm:text-3xl">Créer un compte</h2>
                     <p class="mt-2 text-sm text-grey">Rejoignez KhalilShop.</p>
 
                     <template x-if="success">

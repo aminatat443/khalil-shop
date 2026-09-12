@@ -18,6 +18,14 @@ class Order extends Model
         'expediee' => 'primary', 'livree' => 'green', 'annulee' => 'red',
     ];
 
+    public const PAYMENT_METHOD_LABELS = [
+        'cod' => 'À la livraison',
+        'wave' => 'Wave',
+        'orange_money' => 'Orange Money',
+        'carte' => 'Carte bancaire',
+        'especes' => 'Espèces (en boutique)',
+    ];
+
     protected $fillable = [
         'order_number',
         'user_id',
@@ -37,9 +45,22 @@ class Order extends Model
         'total',
         'payment_method',
         'payment_status',
+        'is_in_store',
         'status',
         'admin_notes',
     ];
+
+    protected function casts(): array
+    {
+        return [
+            'is_in_store' => 'boolean',
+        ];
+    }
+
+    public function paymentMethodLabel(): string
+    {
+        return self::PAYMENT_METHOD_LABELS[$this->payment_method] ?? $this->payment_method;
+    }
 
     public function user(): BelongsTo
     {

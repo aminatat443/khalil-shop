@@ -28,6 +28,7 @@ class User extends Authenticatable implements MustVerifyEmail
         'password',
         'role',
         'email_verified_at',
+        'last_login_at',
     ];
 
     public function isSuperAdmin(): bool
@@ -101,8 +102,18 @@ class User extends Authenticatable implements MustVerifyEmail
     {
         return [
             'email_verified_at' => 'datetime',
+            'last_login_at' => 'datetime',
             'password' => 'hashed',
             'role' => Role::class,
         ];
+    }
+
+    /**
+     * "En ligne" = une session active (table `sessions`, driver database) avec une activité
+     * dans les 5 dernières minutes — pas de connexion permanente à observer autrement.
+     */
+    public function isOnline(): bool
+    {
+        return $this->last_activity && $this->last_activity >= now()->subMinutes(5)->timestamp;
     }
 }

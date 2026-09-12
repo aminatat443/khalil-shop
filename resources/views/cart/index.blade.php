@@ -5,7 +5,7 @@
 @section('content')
 <div x-data class="mx-auto max-w-3xl px-6 py-16 sm:px-10">
 
-    <h1 class="font-display text-4xl font-normal italic text-secondary-shade">Mon panier</h1>
+    <h1 class="font-display text-3xl font-normal italic text-secondary-shade sm:text-4xl">Mon panier</h1>
 
     <template x-if="$store.cart.items.length === 0">
         <div class="mt-16 flex flex-col items-center justify-center border border-secondary-shade/10 py-20 text-center">

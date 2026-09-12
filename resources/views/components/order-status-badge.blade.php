@@ -21,7 +21,7 @@
     <button
         type="button"
         @if(! empty($targets)) @click="open = ! open" @endif
-        class="inline-flex items-center gap-1.5 text-xs {{ $order->status === 'annulee' ? 'text-red-600' : 'text-secondary-shade' }} {{ empty($targets) ? '' : 'cursor-pointer hover:text-primary' }}"
+        class="inline-flex items-center gap-1.5 text-xs {{ $order->status === 'annulee' ? 'text-red-600 dark:text-red-400' : 'text-secondary-shade dark:text-white' }} {{ empty($targets) ? '' : 'cursor-pointer hover:text-primary' }}"
     >
         {{ $statusLabels[$order->status] ?? $order->status }}
         @unless(empty($targets))
@@ -30,7 +30,7 @@
     </button>
 
     @unless(empty($targets))
-        <div x-show="open" x-cloak x-transition.opacity.duration.150ms @click.stop class="absolute left-0 top-full z-20 mt-1 w-44 border border-secondary-shade/10 bg-white py-1 text-left shadow-lg">
+        <div x-show="open" x-cloak x-transition.opacity.duration.150ms @click.stop class="absolute left-0 top-full z-20 mt-1 w-44 border border-secondary-shade/10 bg-white py-1 text-left shadow-lg dark:border-white/10 dark:bg-[#16201f]"
             @foreach($targets as $target)
                 <form
                     action="{{ $target === 'confirmee' ? route('admin.orders.confirm', $order) : ($target === 'annulee' ? route('admin.orders.cancel', $order) : route('admin.orders.status', $order)) }}"
@@ -42,7 +42,7 @@
                     @if($target !== 'confirmee' && $target !== 'annulee')
                         <input type="hidden" name="status" value="{{ $target }}">
                     @endif
-                    <button type="submit" class="block w-full px-4 py-2 text-left text-xs text-secondary-shade transition hover:bg-grey-tint {{ $target === 'annulee' ? 'text-red-600' : '' }}">
+                    <button type="submit" class="block w-full px-4 py-2 text-left text-xs text-secondary-shade transition hover:bg-grey-tint dark:text-white dark:hover:bg-white/10 {{ $target === 'annulee' ? 'text-red-600 dark:text-red-400' : '' }}">
                         {{ $statusLabels[$target] }}
                     </button>
                 </form>

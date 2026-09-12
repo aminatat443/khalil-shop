@@ -6,7 +6,7 @@
 <div x-data="{ returnModal: null }" class="mx-auto max-w-4xl px-6 py-16 sm:px-10">
 
     <a href="{{ route('account.index') }}" class="text-xs text-grey hover:text-primary"><i class="fa-solid fa-arrow-left mr-1"></i>Mon compte</a>
-    <h1 class="mt-3 font-display text-4xl font-normal italic text-secondary-shade">Mes commandes</h1>
+    <h1 class="mt-3 font-display text-3xl font-normal italic text-secondary-shade sm:text-4xl">Mes commandes</h1>
 
     <div class="mt-8">
         <x-account-nav active="commandes" />
@@ -18,15 +18,15 @@
                 $returnInfo = $order->returnStatusInfo();
                 $canRequestReturn = ! $order->hasAnyReturn() && $order->status !== 'annulee' && $order->created_at->diffInDays(now()) <= 7;
             @endphp
-            <div onclick="window.location='{{ route('account.orders.show', $order) }}'" class="cursor-pointer border border-secondary-shade/10 bg-white p-5 shadow-sm transition hover:border-primary/40 hover:shadow-md">
-                <div class="flex flex-wrap items-center justify-between gap-3">
-                    <div>
+            <div onclick="window.location='{{ route('account.orders.show', $order) }}'" class="cursor-pointer border border-secondary-shade/10 bg-white p-4 shadow-sm transition hover:border-primary/40 hover:shadow-md sm:p-5">
+                <div class="flex flex-col gap-3 sm:flex-row sm:flex-wrap sm:items-center sm:justify-between">
+                    <div class="min-w-0">
                         <span class="font-medium text-secondary-shade">{{ $order->order_number }}</span>
-                        <span class="ml-2 text-xs text-grey">{{ $order->created_at->format('d/m/Y') }} · {{ $order->items_count }} article(s)</span>
+                        <span class="block text-xs text-grey sm:ml-2 sm:inline">{{ $order->created_at->format('d/m/Y') }} · {{ $order->items_count }} article(s)</span>
                     </div>
-                    <div class="flex items-center gap-4">
+                    <div class="flex items-center justify-between gap-3 sm:justify-end sm:gap-4">
                         <x-status-pill :tone="$returnInfo['tone'] ?? (\App\Models\Order::STATUS_TONES[$order->status] ?? 'neutral')" :label="$returnInfo['label'] ?? (\App\Models\Order::STATUS_LABELS[$order->status] ?? $order->status)" />
-                        <span class="text-sm font-medium text-secondary-shade">{{ number_format($order->total, 0, ',', ' ') }} FCFA</span>
+                        <span class="whitespace-nowrap text-sm font-medium text-secondary-shade">{{ number_format($order->total, 0, ',', ' ') }} FCFA</span>
                     </div>
                 </div>
 

@@ -19,16 +19,16 @@
 
     <a href="{{ route('account.orders') }}" class="text-xs text-grey hover:text-primary"><i class="fa-solid fa-arrow-left mr-1"></i>Mes commandes</a>
 
-    <div class="mt-3 flex flex-wrap items-center justify-between gap-4">
-        <div>
-            <div class="flex items-center gap-3">
-                <h1 class="font-display text-4xl font-normal italic text-secondary-shade">{{ $order->order_number }}</h1>
+    <div class="mt-3 flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+        <div class="min-w-0">
+            <div class="flex flex-wrap items-center gap-3">
+                <h1 class="font-display text-2xl font-normal italic text-secondary-shade sm:text-3xl lg:text-4xl">{{ $order->order_number }}</h1>
                 @php($returnInfo = $order->returnStatusInfo())
                 <x-status-pill :tone="$returnInfo['tone'] ?? (\App\Models\Order::STATUS_TONES[$order->status] ?? 'neutral')" :label="$returnInfo['label'] ?? (\App\Models\Order::STATUS_LABELS[$order->status] ?? $order->status)" />
             </div>
             <p class="mt-1 text-xs text-grey">Passée le {{ $order->created_at->format('d/m/Y à H:i') }}</p>
         </div>
-        <a href="{{ route('orders.invoice', $order) }}" target="_blank" class="inline-flex items-center gap-2 border border-secondary-shade/20 px-5 py-2.5 text-xs font-semibold uppercase tracking-[0.1em] text-secondary-shade transition hover:border-secondary-shade">
+        <a href="{{ route('orders.invoice', $order) }}" target="_blank" class="inline-flex w-full items-center justify-center gap-2 border border-secondary-shade/20 px-5 py-2.5 text-xs font-semibold uppercase tracking-[0.1em] text-secondary-shade transition hover:border-secondary-shade sm:w-auto">
             <i class="fa-solid fa-file-invoice"></i>Télécharger la facture
         </a>
     </div>
@@ -39,24 +39,26 @@
             <i class="fa-solid fa-circle-xmark mr-2"></i>Cette commande a été annulée.
         </div>
     @else
-        <div class="mt-12 flex items-start justify-between border border-secondary-shade/10 bg-white p-8 shadow-sm">
-            @foreach($steps as $value => $label)
-                @php($stepIndex = array_search($value, array_keys($steps)))
-                <div class="flex flex-1 flex-col items-center text-center">
-                    <div class="flex w-full items-center">
-                        <div class="h-px flex-1 {{ $stepIndex === 0 ? 'bg-transparent' : ($stepIndex <= $currentIndex ? 'bg-primary' : 'bg-grey-tint') }}"></div>
-                        <span class="flex h-7 w-7 shrink-0 items-center justify-center rounded-full text-[10px] font-bold {{ $stepIndex <= $currentIndex ? 'bg-primary text-white' : 'bg-grey-tint text-grey' }}">
-                            @if($stepIndex < $currentIndex)
-                                <i class="fa-solid fa-check text-[9px]"></i>
-                            @else
-                                {{ $stepIndex + 1 }}
-                            @endif
-                        </span>
-                        <div class="h-px flex-1 {{ $stepIndex === count($steps) - 1 ? 'bg-transparent' : ($stepIndex < $currentIndex ? 'bg-primary' : 'bg-grey-tint') }}"></div>
+        <div class="mt-12 overflow-x-auto border border-secondary-shade/10 bg-white p-5 shadow-sm sm:p-8">
+            <div class="flex items-start justify-between gap-1 sm:gap-0">
+                @foreach($steps as $value => $label)
+                    @php($stepIndex = array_search($value, array_keys($steps)))
+                    <div class="flex w-[88px] shrink-0 flex-col items-center text-center sm:w-auto sm:flex-1 sm:shrink">
+                        <div class="flex w-full items-center">
+                            <div class="h-px flex-1 {{ $stepIndex === 0 ? 'bg-transparent' : ($stepIndex <= $currentIndex ? 'bg-primary' : 'bg-grey-tint') }}"></div>
+                            <span class="flex h-7 w-7 shrink-0 items-center justify-center rounded-full text-[10px] font-bold {{ $stepIndex <= $currentIndex ? 'bg-primary text-white' : 'bg-grey-tint text-grey' }}">
+                                @if($stepIndex < $currentIndex)
+                                    <i class="fa-solid fa-check text-[9px]"></i>
+                                @else
+                                    {{ $stepIndex + 1 }}
+                                @endif
+                            </span>
+                            <div class="h-px flex-1 {{ $stepIndex === count($steps) - 1 ? 'bg-transparent' : ($stepIndex < $currentIndex ? 'bg-primary' : 'bg-grey-tint') }}"></div>
+                        </div>
+                        <p class="mt-2 text-[10px] uppercase tracking-[0.05em] {{ $stepIndex <= $currentIndex ? 'text-secondary-shade' : 'text-grey' }}">{{ $label }}</p>
                     </div>
-                    <p class="mt-2 text-[10px] uppercase tracking-[0.05em] {{ $stepIndex <= $currentIndex ? 'text-secondary-shade' : 'text-grey' }}">{{ $label }}</p>
-                </div>
-            @endforeach
+                @endforeach
+            </div>
         </div>
     @endif
 
@@ -65,16 +67,16 @@
         {{-- Articles --}}
         <div class="space-y-3">
             @foreach($order->items as $item)
-                <div class="border border-secondary-shade/10 bg-white p-5 shadow-sm">
+                <div class="border border-secondary-shade/10 bg-white p-4 shadow-sm sm:p-5">
                     <div class="flex items-center justify-between gap-4 text-sm">
-                        <div>
-                            <p class="font-medium text-secondary-shade">{{ $item->product_name }}</p>
+                        <div class="min-w-0">
+                            <p class="break-words font-medium text-secondary-shade">{{ $item->product_name }}</p>
                             @if($item->variant_label)
                                 <p class="text-xs text-grey">{{ $item->variant_label }}</p>
                             @endif
                             <p class="mt-0.5 text-xs text-grey">Qté : {{ $item->quantity }}</p>
                         </div>
-                        <p class="shrink-0 font-medium text-secondary-shade">{{ number_format($item->subtotal, 0, ',', ' ') }} FCFA</p>
+                        <p class="shrink-0 whitespace-nowrap font-medium text-secondary-shade">{{ number_format($item->subtotal, 0, ',', ' ') }} FCFA</p>
                     </div>
 
                     {{-- Demande de retour — 7 jours à partir de la date de la commande --}}
@@ -131,10 +133,14 @@
 
             <div class="border border-secondary-shade/10 bg-white p-6 text-sm text-grey shadow-sm">
                 <p class="text-xs font-semibold uppercase tracking-[0.15em] text-secondary-shade">Livraison</p>
-                <p class="mt-2">{{ $order->delivery_address }}{{ $order->delivery_quartier ? ', '.$order->delivery_quartier : '' }}</p>
-                <p>{{ $order->delivery_city }}, {{ $order->delivery_region }}</p>
+                @if($order->is_in_store)
+                    <p class="mt-2">Retrait en boutique</p>
+                @else
+                    <p class="mt-2">{{ $order->delivery_address }}{{ $order->delivery_quartier ? ', '.$order->delivery_quartier : '' }}</p>
+                    <p>{{ $order->delivery_city }}, {{ $order->delivery_region }}</p>
+                @endif
                 <p class="mt-4 text-xs font-semibold uppercase tracking-[0.15em] text-secondary-shade">Paiement</p>
-                <p class="mt-2">{{ $order->payment_method === 'cod' ? 'À la livraison' : $order->payment_method }}</p>
+                <p class="mt-2">{{ $order->paymentMethodLabel() }}</p>
             </div>
         </div>
 

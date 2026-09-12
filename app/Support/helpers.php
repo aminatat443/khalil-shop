@@ -24,7 +24,11 @@ if (! function_exists('img_url')) {
         $gravity = in_array($crop, ['pad', 'fit', 'limit', 'scale'], true) ? '' : ',g_auto';
         $transform = "w_{$width},h_{$height},c_{$crop}{$gravity},q_auto,f_auto,dpr_auto";
 
-        if ($background) {
+        if ($background === 'auto') {
+            // Couleur dominante de l'image plutôt qu'un fond blanc imposé — chaque photo garde
+            // un fond cohérent avec elle-même au lieu d'un bandeau blanc systématique.
+            $transform .= ',b_auto:predominant';
+        } elseif ($background) {
             $transform .= ",b_rgb:{$background}";
         }
 

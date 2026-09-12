@@ -4,7 +4,17 @@
 
 @section('content')
 
-<h1 class="font-display text-3xl font-normal italic text-secondary-shade">Commandes</h1>
+<div x-data="ajaxFilter()">
+
+<div class="flex flex-wrap items-center justify-between gap-4">
+    <h1 class="font-display text-3xl font-normal italic text-secondary-shade dark:text-white">Commandes</h1>
+    @can('create', App\Models\Order::class)
+        <a href="{{ route('admin.orders.create') }}" class="flex items-center gap-2 bg-secondary-shade px-5 py-2.5 text-xs font-semibold uppercase tracking-[0.1em] text-white transition hover:bg-primary">
+            <i class="fa-solid fa-store"></i>
+            Vente en boutique
+        </a>
+    @endcan
+</div>
 
 @php
     $statusLabels = [
@@ -13,57 +23,22 @@
     ];
 @endphp
 
-<form method="GET" x-data class="mt-8 flex flex-wrap items-center gap-4">
-    <input type="text" name="q" value="{{ request('q') }}" placeholder="N° de commande ou client…" @input.debounce.500ms="$el.form.submit()" @if(request()->filled('q')) autofocus @endif class="w-64 border-b border-secondary-shade/20 bg-transparent py-2 text-sm outline-none focus:border-primary">
-    <select name="status" onchange="this.form.submit()" class="border-b border-secondary-shade/20 bg-transparent py-2 text-sm outline-none focus:border-primary">
+<form method="GET" @submit.prevent="submitForm($event)" class="mt-8 flex flex-wrap items-center gap-4">
+    <input type="text" name="q" value="{{ request('q') }}" placeholder="N° de commande ou client…" @input.debounce.500ms="$el.form.requestSubmit()" @if(request()->filled('q')) autofocus @endif class="w-64 border border-secondary-shade/15 bg-white px-3.5 py-2 text-sm outline-none focus:border-primary focus:ring-2 focus:ring-primary/15 dark:border-white/10 dark:bg-white/5 dark:text-white">
+    <select name="status" @change="$el.form.requestSubmit()" class="border border-secondary-shade/15 bg-white px-3.5 py-2 text-sm outline-none focus:border-primary focus:ring-2 focus:ring-primary/15 dark:border-white/10 dark:bg-white/5 dark:text-white">
         <option value="">Tous les statuts</option>
         @foreach($statusLabels as $value => $label)
             <option value="{{ $value }}" @selected(request('status') === $value)>{{ $label }}</option>
         @endforeach
     </select>
-    <button type="submit" class="text-xs font-semibold uppercase tracking-[0.1em] text-secondary-shade hover:text-primary">Filtrer</button>
+    <noscript><button type="submit" class="text-xs font-semibold uppercase tracking-[0.1em] text-secondary-shade hover:text-primary dark:text-white/70">Filtrer</button></noscript>
+    <i x-show="loading" x-cloak class="fa-solid fa-circle-notch fa-spin text-secondary-shade/40 dark:text-white/30"></i>
 </form>
 
-<div class="mt-6 overflow-x-auto bg-white">
-    <table class="w-full text-sm">
-        <thead>
-            <tr class="border-b border-secondary-shade/10 text-left text-xs uppercase tracking-[0.1em] text-grey">
-                <th class="px-6 py-4 font-medium">N°</th>
-                <th class="px-6 py-4 font-medium">Client</th>
-                <th class="px-6 py-4 font-medium">Total</th>
-                <th class="px-6 py-4 font-medium">Paiement</th>
-                <th class="px-6 py-4 font-medium">Statut</th>
-                <th class="px-6 py-4 font-medium">Date</th>
-                <th class="px-6 py-4 font-medium"></th>
-            </tr>
-        </thead>
-        <tbody class="divide-y divide-secondary-shade/10">
-            @forelse($orders as $order)
-                <tr onclick="window.location='{{ route('admin.orders.show', $order) }}'" class="cursor-pointer transition hover:bg-grey-tint/40">
-                    <td class="px-6 py-4 font-medium text-secondary-shade">{{ $order->order_number }}</td>
-                    <td class="px-6 py-4 text-grey">{{ $order->customer_name }}</td>
-                    <td class="px-6 py-4 text-secondary-shade">{{ number_format($order->total, 0, ',', ' ') }} FCFA</td>
-                    <td class="px-6 py-4 text-grey">{{ $order->payment_status === 'paid' ? 'Payé' : 'En attente' }}</td>
-                    <td class="px-6 py-4" onclick="event.stopPropagation()">
-                        <x-order-status-badge :order="$order" />
-                    </td>
-                    <td class="px-6 py-4 text-xs text-grey">{{ $order->created_at->format('d/m/Y H:i') }}</td>
-                    <td class="px-6 py-4 text-right" onclick="event.stopPropagation()">
-                        <a href="{{ route('orders.invoice', $order) }}" target="_blank" class="mr-4 text-xs text-secondary-shade hover:text-primary" aria-label="Facture">
-                            <i class="fa-solid fa-file-invoice"></i>
-                        </a>
-                        <a href="{{ route('admin.orders.show', $order) }}" class="text-xs text-secondary-shade hover:text-primary">Voir</a>
-                    </td>
-                </tr>
-            @empty
-                <tr>
-                    <td colspan="7" class="px-6 py-10 text-center text-grey">Aucune commande ne correspond à ces critères.</td>
-                </tr>
-            @endforelse
-        </tbody>
-    </table>
+<div x-ref="results" @click="onResultsClick($event)" :class="loading && 'opacity-50 pointer-events-none'" class="mt-6 transition-opacity">
+    @include('admin.orders.partials.table')
 </div>
 
-<div class="mt-6">{{ $orders->links() }}</div>
+</div>
 
 @endsection

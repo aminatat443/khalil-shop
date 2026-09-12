@@ -98,7 +98,7 @@
                                 <tr>
                                     <td style="padding:14px 16px;">N° de commande<br><strong style="color:#213737; font-size:13px;">{{ $order->order_number }}</strong></td>
                                     <td style="padding:14px 16px;">Date<br><strong style="color:#213737; font-size:13px;">{{ $order->created_at->format('d/m/Y') }}</strong></td>
-                                    <td style="padding:14px 16px;">Paiement<br><strong style="color:#213737; font-size:13px;">{{ $order->payment_method === 'cod' ? 'À la livraison' : $order->payment_method }}</strong></td>
+                                    <td style="padding:14px 16px;">Paiement<br><strong style="color:#213737; font-size:13px;">{{ $order->paymentMethodLabel() }}</strong></td>
                                 </tr>
                             </table>
                         </td>

@@ -28,6 +28,7 @@ class ProductController extends Controller
 
         $reviews = $product->reviews()->where('is_approved', true)->with('user')->latest()->get();
         $myReview = auth()->check() ? $product->reviews()->where('user_id', auth()->id())->first() : null;
+        $canEditReview = $myReview && auth()->user()->can('update', $myReview);
 
         $relatedProducts = $this->relatedProducts($product);
 
@@ -40,6 +41,7 @@ class ProductController extends Controller
             'reviews' => $reviews,
             'averageRating' => $reviews->isNotEmpty() ? round($reviews->avg('rating'), 1) : null,
             'myReview' => $myReview,
+            'canEditReview' => $canEditReview,
             'relatedProducts' => $relatedProducts,
         ]);
     }
@@ -55,7 +57,8 @@ class ProductController extends Controller
         $base = fn () => Product::where('is_active', true)
             ->where('id', '!=', $product->id)
             ->with(['images' => fn ($q) => $q->orderBy('sort_order')])
-            ->withCount('variants');
+            ->withCount('variants')
+            ->withRatings();
 
         $related = $base()->where('category_id', $product->category_id)->inRandomOrder()->take($limit)->get();
 

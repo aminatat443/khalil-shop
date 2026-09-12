@@ -3,30 +3,39 @@
 
 @section('content')
 
-<div x-data @keydown.escape.window="window.location = '{{ $modalBack ?? route('admin.dashboard') }}'" class="fixed inset-0 z-50">
+<div
+    x-data="{ show: false }"
+    x-init="setTimeout(() => show = true, 10)"
+    @keydown.escape.window="window.location = '{{ $modalBack ?? route('admin.dashboard') }}'"
+    class="fixed inset-0 z-50"
+>
 
-    <a href="{{ $modalBack ?? route('admin.dashboard') }}" class="absolute inset-0 bg-secondary-shade/50 backdrop-blur-[2px]" aria-label="Fermer"></a>
+    <a
+        href="{{ $modalBack ?? route('admin.dashboard') }}"
+        x-show="show"
+        x-cloak
+        x-transition:enter="transition ease-out duration-200" x-transition:enter-start="opacity-0" x-transition:enter-end="opacity-100"
+        x-transition:leave="transition ease-in duration-150" x-transition:leave-start="opacity-100" x-transition:leave-end="opacity-0"
+        class="absolute inset-0 bg-secondary-shade/50 backdrop-blur-sm"
+        aria-label="Fermer"
+    ></a>
 
     <div class="relative flex h-full items-start justify-center overflow-y-auto px-4 py-10 sm:py-16">
-        <div class="relative w-full @yield('modal-width', 'max-w-xl') bg-white shadow-2xl">
+        <div
+            x-show="show"
+            x-cloak
+            x-transition:enter="transition ease-out duration-200" x-transition:enter-start="opacity-0 scale-95 translate-y-2" x-transition:enter-end="opacity-100 scale-100 translate-y-0"
+            x-transition:leave="transition ease-in duration-150" x-transition:leave-start="opacity-100 scale-100" x-transition:leave-end="opacity-0 scale-95"
+            class="relative w-full @yield('modal-width', 'max-w-xl') overflow-hidden bg-white shadow-2xl ring-1 ring-black/5 dark:bg-[#16201f] dark:ring-white/10"
+        >
 
-            <a href="{{ $modalBack ?? route('admin.dashboard') }}" class="absolute right-5 top-5 z-10 text-secondary-shade/50 transition hover:text-primary" aria-label="Fermer">
+            <div class="h-1.5 bg-gradient-to-r from-secondary-shade via-primary to-secondary-shade"></div>
+
+            <a href="{{ $modalBack ?? route('admin.dashboard') }}" class="absolute right-5 top-7 z-10 flex h-9 w-9 items-center justify-center rounded-full bg-grey-tint/70 text-secondary-shade/60 transition hover:bg-grey-tint hover:text-primary dark:bg-white/5 dark:text-white/50 dark:hover:bg-white/10 dark:hover:text-primary" aria-label="Fermer">
                 <i class="fa-solid fa-xmark text-lg"></i>
             </a>
 
-            <div class="max-h-[85vh] overflow-y-auto p-8 sm:p-10">
-
-                {{-- La bannière de confirmation du layout admin est masquée derrière cette modale
-                     (position fixed plein écran) : on la réaffiche ici pour qu'elle reste visible. --}}
-                @if(session('status'))
-                    <div x-data="{ show: true }" x-show="show" class="mb-6 flex items-start justify-between gap-4 border border-green-200 bg-green-50 px-5 py-4 text-sm text-green-700 dark:border-green-500/20 dark:bg-green-500/10 dark:text-green-400">
-                        <span>{{ session('status') }}</span>
-                        <button type="button" @click="show = false" aria-label="Fermer" class="shrink-0 text-green-700/60 transition hover:text-green-700 dark:text-green-400/60 dark:hover:text-green-400">
-                            <i class="fa-solid fa-xmark"></i>
-                        </button>
-                    </div>
-                @endif
-
+            <div class="max-h-[calc(85vh-0.375rem)] overflow-y-auto p-5 sm:p-10">
                 @yield('modal')
             </div>
 

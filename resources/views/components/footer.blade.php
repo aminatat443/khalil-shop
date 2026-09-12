@@ -3,7 +3,7 @@
     {{-- Bandeau newsletter --}}
     <div class="border-b border-secondary-shade/10">
         <div class="mx-auto max-w-[1600px] px-6 py-20 text-center sm:px-10">
-            <p class="font-display text-3xl font-normal italic text-secondary-shade">Restez inspiré·e</p>
+            <p class="font-display text-2xl font-normal italic text-secondary-shade sm:text-3xl">Restez inspiré·e</p>
             <p class="mx-auto mt-3 max-w-md text-sm text-grey">
                 Recevez nos nouveautés, promotions et inspirations déco directement dans votre boîte mail.
             </p>

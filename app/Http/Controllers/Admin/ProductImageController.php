@@ -6,9 +6,11 @@ use App\Http\Controllers\Controller;
 use App\Models\Product;
 use App\Models\ProductImage;
 use App\Models\Setting;
+use Illuminate\Http\JsonResponse;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Storage;
+use Illuminate\Support\Facades\View;
 
 class ProductImageController extends Controller
 {
@@ -18,7 +20,7 @@ class ProductImageController extends Controller
      * Bascule automatiquement sur Cloudinary dès que ses identifiants sont renseignés dans
      * .env (Setting::mediaDisk()), stockage local (disque `public`) en attendant.
      */
-    public function store(Request $request, Product $product): RedirectResponse
+    public function store(Request $request, Product $product): RedirectResponse|JsonResponse
     {
         $this->authorize('update', $product);
 
@@ -41,6 +43,10 @@ class ProductImageController extends Controller
             ]);
         }
 
+        if ($request->wantsJson()) {
+            return $this->gridResponse($product);
+        }
+
         return back()->with('status', 'Image(s) ajoutée(s).');
     }
 
@@ -49,7 +55,7 @@ class ProductImageController extends Controller
      * `->first()` sur la relation images dans les contrôleurs vitrine), donc on fait passer
      * l'image choisie devant les autres sans introduire de colonne dédiée.
      */
-    public function primary(Product $product, ProductImage $image): RedirectResponse
+    public function primary(Request $request, Product $product, ProductImage $image): RedirectResponse|JsonResponse
     {
         $this->authorize('update', $product);
 
@@ -58,10 +64,50 @@ class ProductImageController extends Controller
         $product->images()->where('id', '!=', $image->id)->increment('sort_order');
         $image->update(['sort_order' => 0]);
 
+        if ($request->wantsJson()) {
+            return $this->gridResponse($product);
+        }
+
         return back()->with('status', 'Photo principale mise à jour.');
     }
 
-    public function destroy(Product $product, ProductImage $image): RedirectResponse
+    /**
+     * Rendu de la grille d'images (partagé par store/primary/destroy) : permet aux appels AJAX
+     * du back-office de mettre à jour l'affichage sans recharger la page ni déclencher de
+     * bannière de statut en session.
+     */
+    private function gridResponse(Product $product): JsonResponse
+    {
+        $product->load('images');
+
+        return response()->json([
+            'html' => View::make('admin.products.partials.image-grid', ['product' => $product])->render(),
+        ]);
+    }
+
+    /**
+     * Glisser-déposer pour réordonner les photos (section 49) — reçoit la liste des ids dans
+     * le nouvel ordre et réécrit sort_order en conséquence.
+     */
+    public function reorder(Request $request, Product $product): JsonResponse
+    {
+        $this->authorize('update', $product);
+
+        $data = $request->validate([
+            'ids' => ['required', 'array'],
+            'ids.*' => ['integer'],
+        ]);
+
+        $ids = collect($data['ids'])->intersect($product->images()->pluck('id'))->values();
+
+        foreach ($ids as $order => $id) {
+            ProductImage::where('id', $id)->update(['sort_order' => $order]);
+        }
+
+        return response()->json(['status' => 'ok']);
+    }
+
+    public function destroy(Request $request, Product $product, ProductImage $image): RedirectResponse|JsonResponse
     {
         $this->authorize('update', $product);
 
@@ -73,6 +119,10 @@ class ProductImageController extends Controller
         }
 
         $image->delete();
+
+        if ($request->wantsJson()) {
+            return $this->gridResponse($product);
+        }
 
         return back()->with('status', 'Image supprimée.');
     }

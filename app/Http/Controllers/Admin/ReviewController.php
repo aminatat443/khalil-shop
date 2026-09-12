@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
 use App\Models\Review;
+use Illuminate\Http\JsonResponse;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\View\View;
@@ -13,7 +14,7 @@ class ReviewController extends Controller
     /**
      * Modération des avis clients (section 39 du cahier des charges).
      */
-    public function index(Request $request): View
+    public function index(Request $request): View|JsonResponse
     {
         $this->authorize('viewAny', Review::class);
 
@@ -25,7 +26,7 @@ class ReviewController extends Controller
             });
         };
 
-        return view('admin.reviews.index', [
+        $data = [
             'pending' => Review::with(['user', 'product'])
                 ->where('is_approved', false)
                 ->when($request->filled('q'), $search)
@@ -37,7 +38,15 @@ class ReviewController extends Controller
                 ->latest()
                 ->take(20)
                 ->get(),
-        ]);
+        ];
+
+        if ($request->ajax()) {
+            return response()->json([
+                'html' => view('admin.reviews.partials.lists', $data)->render(),
+            ]);
+        }
+
+        return view('admin.reviews.index', $data);
     }
 
     public function approve(Review $review): RedirectResponse

@@ -18,6 +18,12 @@ class OrderPolicy
         return $user->isGestionnaire() || $user->id === $order->user_id;
     }
 
+    public function create(User $user): bool
+    {
+        // Enregistrement d'une commande sur place, depuis le back-office
+        return $user->isGestionnaire();
+    }
+
     public function update(User $user, Order $order): bool
     {
         // Changer le statut, confirmer (docs/SPEC.md §2.4)

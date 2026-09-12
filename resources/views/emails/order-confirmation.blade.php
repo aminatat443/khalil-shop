@@ -71,7 +71,7 @@
 
                             <div style="margin-top:24px; padding:16px; background:#f5f5f5; font-size:13px; color:#555555;">
                                 <strong>Livraison à :</strong> {{ $order->delivery_address }}, {{ $order->delivery_city }}, {{ $order->delivery_region }}<br>
-                                <strong>Paiement :</strong> {{ $order->payment_method === 'cod' ? 'À la livraison' : $order->payment_method }}
+                                <strong>Paiement :</strong> {{ $order->paymentMethodLabel() }}
                             </div>
 
                             <p style="font-size:12px; color:#999999; margin-top:24px;">

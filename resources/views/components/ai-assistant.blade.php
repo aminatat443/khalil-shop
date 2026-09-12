@@ -105,7 +105,7 @@
         x-transition:leave-start="opacity-100"
         x-transition:leave-end="opacity-0"
         x-cloak
-        class="absolute bottom-[4.5rem] right-0 flex h-[28rem] w-[22rem] max-w-[calc(100vw-3rem)] flex-col border border-secondary-shade/10 bg-white shadow-2xl"
+        class="fixed inset-x-4 bottom-24 top-36 z-50 flex flex-col border border-secondary-shade/10 bg-white shadow-2xl sm:absolute sm:inset-x-auto sm:inset-y-auto sm:bottom-[4.5rem] sm:right-0 sm:top-auto sm:z-auto sm:h-[28rem] sm:w-[22rem] sm:max-w-[calc(100vw-3rem)]"
     >
         <div class="flex items-center justify-between border-b border-secondary-shade/10 bg-secondary-shade px-5 py-4">
             <p class="text-sm font-medium text-white">Assistant KhalilShop</p>

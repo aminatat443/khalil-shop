@@ -6,6 +6,7 @@ use App\Http\Controllers\Controller;
 use App\Models\Category;
 use App\Models\Product;
 use App\Models\Promotion;
+use Illuminate\Http\JsonResponse;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\View\View;
@@ -15,7 +16,7 @@ class PromotionController extends Controller
     /**
      * Gestion des promotions planifiées (section 46 du cahier des charges).
      */
-    public function index(Request $request): View
+    public function index(Request $request): View|JsonResponse
     {
         $this->authorize('viewAny', Promotion::class);
 
@@ -30,6 +31,12 @@ class PromotionController extends Controller
             ->latest()
             ->paginate(20)
             ->withQueryString();
+
+        if ($request->ajax()) {
+            return response()->json([
+                'html' => view('admin.promotions.partials.table', ['promotions' => $promotions])->render(),
+            ]);
+        }
 
         return view('admin.promotions.index', ['promotions' => $promotions]);
     }

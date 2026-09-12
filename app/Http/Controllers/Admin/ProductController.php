@@ -8,6 +8,7 @@ use App\Models\Color;
 use App\Models\Product;
 use App\Models\Setting;
 use App\Models\Size;
+use Illuminate\Http\JsonResponse;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Storage;
@@ -19,7 +20,7 @@ class ProductController extends Controller
     /**
      * Gestion des produits (section 41 du cahier des charges).
      */
-    public function index(Request $request): View
+    public function index(Request $request): View|JsonResponse
     {
         $this->authorize('viewAny', Product::class);
 
@@ -32,22 +33,41 @@ class ProductController extends Controller
             ->paginate(20)
             ->withQueryString();
 
+        if ($request->ajax()) {
+            return response()->json([
+                'html' => view('admin.products.partials.table', ['products' => $products])->render(),
+            ]);
+        }
+
         return view('admin.products.index', [
             'products' => $products,
             'categories' => Category::orderBy('name')->get(),
         ]);
     }
 
-    public function create(): View
+    /**
+     * "Nouveau produit" crée immédiatement un brouillon (inactif, invisible en boutique) et
+     * redirige vers l'édition — pour que l'admin retrouve tout de suite le même écran que la
+     * modification d'un produit existant (photos avec glisser-déposer, variantes…) plutôt
+     * qu'un formulaire minimal en attendant un premier enregistrement.
+     */
+    public function create(): RedirectResponse
     {
         $this->authorize('create', Product::class);
 
-        return view('admin.products.form', [
-            'product' => new Product(),
-            'categories' => Category::whereNotNull('parent_id')->orderBy('name')->get(),
-            'colors' => Color::orderBy('name')->get(),
-            'sizes' => Size::orderBy('name')->get(),
+        $category = Category::whereNotNull('parent_id')->orderBy('name')->first();
+
+        abort_if(! $category, 500, 'Créez d\'abord une catégorie avant d\'ajouter un produit.');
+
+        $product = Product::create([
+            'category_id' => $category->id,
+            'name' => 'Nouveau produit',
+            'slug' => $this->uniqueSlug('Nouveau produit'),
+            'price' => 0,
+            'is_active' => false,
         ]);
+
+        return redirect()->route('admin.products.edit', $product);
     }
 
     public function store(Request $request): RedirectResponse
@@ -87,17 +107,45 @@ class ProductController extends Controller
     {
         $this->authorize('update', $product);
 
-        $product->load(['images' => fn ($q) => $q->orderBy('sort_order'), 'variants.color', 'variants.size']);
+        $product->load(['category.parent', 'images' => fn ($q) => $q->orderBy('sort_order'), 'variants.color', 'variants.size']);
 
         return view('admin.products.form', [
             'product' => $product,
             'categories' => Category::whereNotNull('parent_id')->orderBy('name')->get(),
             'colors' => Color::orderBy('name')->get(),
-            'sizes' => Size::orderBy('name')->get(),
+            'sizes' => $this->sizesForCategory($product->category),
         ]);
     }
 
-    public function update(Request $request, Product $product): RedirectResponse
+    /**
+     * Les tailles n'ont de sens que pour les vêtements (S à XXL) et les chaussures
+     * (pointures 36 à 46) — les autres univers (accessoires, maison & décoration) n'affichent
+     * aucune taille plutôt qu'une liste sans rapport avec le produit.
+     */
+    private function sizesForCategory(?Category $category): \Illuminate\Support\Collection
+    {
+        $universeSlug = ($category?->parent ?? $category)?->slug;
+
+        if (! in_array($universeSlug, ['femme', 'homme', 'chaussures'], true)) {
+            return collect();
+        }
+
+        $sizes = Size::all();
+
+        if ($universeSlug === 'chaussures') {
+            return $sizes->filter(fn ($size) => is_numeric($size->name))
+                ->sortBy(fn ($size) => (int) $size->name)
+                ->values();
+        }
+
+        $order = ['S', 'M', 'L', 'XL', 'XXL'];
+
+        return $sizes->filter(fn ($size) => in_array($size->name, $order, true))
+            ->sortBy(fn ($size) => array_search($size->name, $order, true))
+            ->values();
+    }
+
+    public function update(Request $request, Product $product): RedirectResponse|JsonResponse
     {
         $this->authorize('update', $product);
 
@@ -109,6 +157,10 @@ class ProductController extends Controller
 
         $product->update($data);
 
+        if ($request->ajax()) {
+            return response()->json(['status' => 'ok']);
+        }
+
         return redirect()->route('admin.products.edit', $product)->with('status', 'Produit mis à jour.');
     }
 
@@ -116,15 +168,60 @@ class ProductController extends Controller
      * Bascule rapide "vedette" (slider du hero) / "nouveauté", directement depuis la liste,
      * sans passer par le formulaire d'édition.
      */
-    public function toggleFlag(Request $request, Product $product, string $flag): RedirectResponse
+    public function toggleFlag(Request $request, Product $product, string $flag): RedirectResponse|JsonResponse
     {
         $this->authorize('update', $product);
 
-        abort_unless(in_array($flag, ['is_featured', 'is_new', 'is_promo'], true), 404);
+        abort_unless(in_array($flag, ['is_featured', 'is_new', 'is_active', 'is_promo'], true), 404);
 
         $product->update([$flag => ! $product->$flag]);
 
+        if ($request->ajax()) {
+            return response()->json(['status' => 'ok', $flag => $product->$flag]);
+        }
+
         return back();
+    }
+
+    /**
+     * Mise en promotion depuis la liste : contrairement à "vedette"/"nouveauté" (simples
+     * booléens), une promo implique un vrai changement de prix — l'icône ouvre donc une modale
+     * plutôt que de basculer un drapeau à l'aveugle.
+     */
+    public function setPromo(Request $request, Product $product): RedirectResponse
+    {
+        $this->authorize('update', $product);
+
+        if ($request->boolean('remove')) {
+            $product->update([
+                'price' => $product->old_price ?? $product->price,
+                'old_price' => null,
+                'is_promo' => false,
+            ]);
+
+            return back()->with('status', 'Promotion retirée.');
+        }
+
+        $data = $request->validate([
+            'mode' => ['required', 'in:percentage,price'],
+            'percentage' => ['required_if:mode,percentage', 'nullable', 'integer', 'min:1', 'max:90'],
+            'promo_price' => ['required_if:mode,price', 'nullable', 'integer', 'min:0'],
+        ]);
+
+        // Si déjà en promo, on repart du prix d'origine (old_price), pas du prix déjà réduit.
+        $basePrice = $product->is_promo && $product->old_price ? $product->old_price : $product->price;
+
+        $newPrice = $data['mode'] === 'percentage'
+            ? (int) round($basePrice * (1 - $data['percentage'] / 100))
+            : (int) $data['promo_price'];
+
+        $product->update([
+            'old_price' => $basePrice,
+            'price' => $newPrice,
+            'is_promo' => true,
+        ]);
+
+        return back()->with('status', 'Promotion appliquée.');
     }
 
     public function destroy(Product $product): RedirectResponse

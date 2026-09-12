@@ -13,7 +13,7 @@
             Nouvelle collection
         </p>
 
-        <h1 class="starting:opacity-0 starting:translate-y-4 mt-6 translate-y-0 font-display text-6xl font-normal italic leading-[1.02] text-secondary-shade opacity-100 transition-all duration-700 delay-100 md:text-[5.5rem]">
+        <h1 class="starting:opacity-0 starting:translate-y-4 mt-6 translate-y-0 font-display text-5xl font-normal italic leading-[1.02] text-secondary-shade opacity-100 transition-all duration-700 delay-100 sm:text-6xl lg:text-[5.5rem]">
             Votre style,
             <br>
             votre <span class="text-primary">univers.</span>
@@ -23,17 +23,17 @@
             Vêtements, chaussures, accessoires et décoration maison — une expérience shopping pensée pour vous.
         </p>
 
-        <div class="starting:opacity-0 mt-8 flex items-center gap-8 opacity-100 transition-all duration-700 delay-300">
+        <div class="starting:opacity-0 mt-8 flex flex-col items-start gap-5 opacity-100 transition-all duration-700 delay-300 sm:flex-row sm:items-center sm:gap-8">
             <a
                 href="{{ $universes->first() ? route('catalog.show', $universes->first()) : '#' }}"
-                class="bg-secondary-shade px-9 py-4 text-xs font-semibold uppercase tracking-[0.15em] text-white transition hover:bg-primary"
+                class="whitespace-nowrap bg-secondary-shade px-9 py-4 text-xs font-semibold uppercase tracking-[0.15em] text-white transition hover:bg-primary"
             >
                 Découvrir la collection
             </a>
 
             <a
                 href="{{ route('search', ['nouveautes' => 1]) }}"
-                class="group text-xs font-semibold uppercase tracking-[0.15em] text-secondary-shade"
+                class="group whitespace-nowrap text-xs font-semibold uppercase tracking-[0.15em] text-secondary-shade"
             >
                 Voir les nouveautés
                 <span class="mt-1 block h-px w-0 bg-secondary-shade transition-all duration-300 group-hover:w-full"></span>
@@ -43,7 +43,7 @@
     </div>
 
 
-    <div class="relative hidden h-[20rem] md:block md:h-full">
+    <div class="relative mt-8 h-[20rem] md:mt-0 md:h-full">
 
         @if($heroSlides->isNotEmpty())
             <div
@@ -127,7 +127,7 @@
     <div class="mx-auto max-w-[1600px] px-6 py-16 sm:px-10">
 
         <p class="text-xs font-medium uppercase tracking-[0.35em] text-grey">Univers</p>
-        <h2 class="mt-3 font-display text-4xl font-normal italic text-secondary-shade">Explorez nos collections</h2>
+        <h2 class="mt-3 font-display text-3xl font-normal italic text-secondary-shade sm:text-4xl">Explorez nos collections</h2>
 
         @php
             $universeIcons = [
@@ -139,14 +139,14 @@
             ];
         @endphp
 
-        <div class="mt-10 grid grid-cols-2 gap-px bg-secondary-shade/10 sm:grid-cols-3 md:grid-cols-5">
+        <div class="mt-10 grid grid-cols-5 gap-1.5 sm:gap-3 lg:gap-px lg:bg-secondary-shade/10">
             @foreach($universes as $universe)
                 <a
                     href="{{ route('catalog.show', $universe) }}"
-                    class="group flex aspect-[3/4] flex-col items-center justify-center gap-5 bg-white p-6 text-center transition-colors duration-300 hover:bg-primary-tint/40"
+                    class="group flex flex-col items-center justify-center gap-1.5 border border-secondary-shade/10 bg-white p-1.5 text-center transition-colors duration-300 hover:bg-primary-tint/40 sm:gap-2 sm:p-3 lg:aspect-[3/4] lg:gap-5 lg:border-0 lg:p-6"
                 >
-                    <i class="fa-solid {{ $universeIcons[$universe->slug] ?? 'fa-star' }} text-2xl text-secondary-shade/30 transition group-hover:text-primary"></i>
-                    <span class="font-display text-lg italic text-secondary-shade">{{ $universe->name }}</span>
+                    <i class="fa-solid {{ $universeIcons[$universe->slug] ?? 'fa-star' }} text-xs text-secondary-shade/30 transition group-hover:text-primary sm:text-base lg:text-2xl"></i>
+                    <span class="font-display text-[10px] italic leading-tight text-secondary-shade sm:text-sm lg:text-lg">{{ $universe->name }}</span>
                 </a>
             @endforeach
         </div>
@@ -163,7 +163,7 @@
         <div class="mb-10 flex flex-wrap items-end justify-between gap-4">
             <div>
                 <p class="text-xs font-medium uppercase tracking-[0.35em] text-grey">Fraîchement arrivé</p>
-                <h2 class="mt-3 font-display text-4xl font-normal italic text-secondary-shade">Nouveautés</h2>
+                <h2 class="mt-3 font-display text-3xl font-normal italic text-secondary-shade sm:text-4xl">Nouveautés</h2>
             </div>
             <a href="{{ route('search', ['nouveautes' => 1]) }}" class="group text-xs font-semibold uppercase tracking-[0.15em] text-secondary-shade">
                 Tout voir
@@ -171,11 +171,13 @@
             </a>
         </div>
 
-        <div class="grid grid-cols-2 gap-x-5 gap-y-8 sm:grid-cols-4 lg:grid-cols-5">
+        <x-horizontal-scroller>
             @foreach($newProducts as $product)
-                <x-product-card :product="$product" />
+                <div class="w-[46vw] shrink-0 sm:w-[220px]">
+                    <x-product-card :product="$product" />
+                </div>
             @endforeach
-        </div>
+        </x-horizontal-scroller>
     </div>
 </section>
 @endif
@@ -186,16 +188,18 @@
 <section class="border-t border-secondary-shade/10">
     <div class="mx-auto max-w-[1600px] px-6 py-16 sm:px-10">
 
-        <div class="mb-10 bg-primary-tint px-10 py-12 text-center">
+        <div class="mb-10 bg-primary-tint px-6 py-10 text-center sm:px-10 sm:py-12">
             <p class="text-xs font-semibold uppercase tracking-[0.35em] text-primary-shade">Sale</p>
-            <p class="mt-3 font-display text-6xl font-normal italic text-secondary-shade">Jusqu'à -50%</p>
+            <p class="mt-3 font-display text-4xl font-normal italic text-secondary-shade sm:text-5xl md:text-6xl">Jusqu'à -50%</p>
         </div>
 
-        <div class="grid grid-cols-2 gap-x-5 gap-y-8 sm:grid-cols-4 lg:grid-cols-5">
+        <x-horizontal-scroller>
             @foreach($promoProducts as $product)
-                <x-product-card :product="$product" />
+                <div class="w-[46vw] shrink-0 sm:w-[220px]">
+                    <x-product-card :product="$product" />
+                </div>
             @endforeach
-        </div>
+        </x-horizontal-scroller>
     </div>
 </section>
 @endif
@@ -211,7 +215,7 @@
             <div class="mb-10 flex flex-wrap items-end justify-between gap-4">
                 <div>
                     <p class="text-xs font-medium uppercase tracking-[0.35em] text-grey">Collection</p>
-                    <h2 class="mt-3 font-display text-4xl font-normal italic text-secondary-shade">{{ $universe->name }}</h2>
+                    <h2 class="mt-3 font-display text-3xl font-normal italic text-secondary-shade sm:text-4xl">{{ $universe->name }}</h2>
                 </div>
                 <a href="{{ route('catalog.show', $universe) }}" class="group text-xs font-semibold uppercase tracking-[0.15em] text-secondary-shade">
                     Découvrir {{ $universe->name }}
@@ -219,11 +223,13 @@
                 </a>
             </div>
 
-            <div class="grid grid-cols-2 gap-x-5 gap-y-8 sm:grid-cols-4 lg:grid-cols-5">
+            <x-horizontal-scroller>
                 @foreach($items as $product)
-                    <x-product-card :product="$product" />
+                    <div class="w-[46vw] shrink-0 sm:w-[220px]">
+                        <x-product-card :product="$product" />
+                    </div>
                 @endforeach
-            </div>
+            </x-horizontal-scroller>
         </div>
     </section>
 @endforeach

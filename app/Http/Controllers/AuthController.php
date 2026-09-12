@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Enums\Role;
 use App\Models\User;
 use App\Services\OrderService;
+use App\Services\SecurityMonitor;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
@@ -17,7 +18,10 @@ use Laravel\Socialite\Two\InvalidStateException;
 
 class AuthController extends Controller
 {
-    public function __construct(private readonly OrderService $orders) {}
+    public function __construct(
+        private readonly OrderService $orders,
+        private readonly SecurityMonitor $security,
+    ) {}
 
     /**
      * Connexion (section 37 du cahier des charges) — fenêtre flottante, pas de page dédiée.
@@ -30,6 +34,8 @@ class AuthController extends Controller
         ]);
 
         if (! Auth::attempt($credentials, $request->boolean('remember'))) {
+            $this->security->recordFailedLogin($request, $credentials['email']);
+
             $message = "Email ou mot de passe incorrect.";
 
             if ($request->wantsJson()) {
